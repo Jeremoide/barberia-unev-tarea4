@@ -45,7 +45,7 @@ Las cifras iniciales son datos de práctica almacenados en la base. No son const
 
 MariaDB puede ser remoto si el proveedor permite conexiones TCP/TLS. MyASP.NET anuncia MySQL: para ese servicio usar `jdbc:mysql:` y Connector/J, incluido en Maven. Para MariaDB se usa su propio conector. Configurar `sslMode=VERIFY_IDENTITY` en MySQL o `sslMode=verify-full` en MariaDB y el nombre de host que corresponda al certificado. La aplicación rechaza conexiones remotas sin verificación TLS. No desactivar la verificación del certificado como solución a un error.
 
-El despliegue remoto está PENDIENTE: el usuario aún no tiene cuenta ni base en MyASP.NET. No hay host, acceso remoto, capturas de panel ni enlace de conexión verificados. La prueba de conexión incluida es LOCAL. Ver la guía de nube en la documentación de entrega. No es una aplicación web y no debe subirse el JAR al hosting.
+Estado verificado el 24 de noviembre de 2026: alojamiento MyASP.NET activo y base MySQL 8.0.46 creada. Se importaron las 14 tablas y los datos de demostración mediante phpMyAdmin; se comprobaron 15 claves foráneas, 3 usuarios, 8 clientes, 24 citas y 18 pagos (8100.00). Las cuentas todavía no tienen Authenticator vinculado. La conexión JDBC remota sigue pendiente: el servidor presenta un certificado autofirmado automático sin identidad del nombre del servidor, incompatible con VERIFY_IDENTITY. Solicitar al proveedor un endpoint con certificado válido y su cadena de confianza. No desactivar la verificación TLS. La configuración privada de nube está separada de la configuración local y requiere completar la contraseña localmente. No es una aplicación web y no debe subirse el JAR al hosting.
 
 ## Pruebas y distribución
 
@@ -58,7 +58,7 @@ java -cp target/barberia-v2-2.0.0.jar edu.unev.barberia.tools.CheckConnection
 
 Las pruebas de BD necesitan las cuentas de práctica. Las pruebas gráficas necesitan sesión de escritorio y las claves de las cuentas de prueba en el archivo privado (`demo.admin.password`, `demo.recepcion.password`, `demo.barbero.password`). Restablecen 2FA de esas tres cuentas DEMO para permitir que el propietario las vincule después; no ejecutarlas sobre cuentas personales. Las pruebas funcionales crean registros temporales y los eliminan, sin modificar el proyecto original.
 
-El JAR de Maven incluye dependencias y punto de entrada `Launcher`; `jpackage` genera una app-image Linux con runtime. Para usarla desde este equipo, iniciar la base de desarrollo y ejecutarla desde la carpeta del proyecto para que encuentre config.properties. La distribución no incluye credenciales, claves privadas ni secretos TOTP. No se ha subido a GitHub ni se ha publicado un enlace de descarga.
+El JAR de Maven incluye dependencias y punto de entrada `Launcher`; `jpackage` genera una app-image Linux con runtime. Para usarla desde este equipo, iniciar la base de desarrollo y ejecutarla desde la carpeta del proyecto para que encuentre config.properties. La distribución no incluye credenciales, claves privadas ni secretos TOTP. Código publicado en https://github.com/Jeremoide/barberia-unev-tarea4. La versión original está separada en https://github.com/Jeremoide/barberia-unev. Los ejecutables siguen disponibles localmente; todavía no se ha publicado un enlace de descarga del ejecutable.
 
 ## Uso de IA
 
