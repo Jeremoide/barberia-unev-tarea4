@@ -1,0 +1,10 @@
+target/
+config.properties
+config/database.properties
+.local-db/
+logs/
+*.log
+reportes/
+.idea/
+config/*.properties
+.secrets/
