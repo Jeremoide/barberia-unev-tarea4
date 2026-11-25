@@ -25,10 +25,16 @@ public final class PanelController {
   private String module = "Dashboard";
   private TableView<Map<String, Object>> table;
   private TilePane cards;
+  private int page = 0;
+  private String query = "", state = "TODOS";
   private int generation;
+  private javafx.scene.Node navigation;
 
   @FXML
   private void initialize() {
+    mensaje.managedProperty().bind(mensaje.textProperty().isNotEmpty());
+    mensaje.visibleProperty().bind(mensaje.managedProperty());
+    navigation = root.getLeft();
     user.setText(App.session.nombre() + " · " + App.session.rol());
     desde.setValue(LocalDate.now().withDayOfMonth(1));
     hasta.setValue(LocalDate.now().plusMonths(1));
@@ -53,6 +59,53 @@ public final class PanelController {
             adapt(s.getWidth());
           }
         });
+    if (!App.session.barbero()) {
+      Label section = new Label("OPERACIONES 3.0");
+      section.getStyleClass().add("nav-section");
+      sidebar.getChildren().add(section);
+      for (String name :
+          List.of(
+              "Inventario",
+              "Lotes",
+              "Proveedores",
+              "Compras",
+              "Ventas",
+              "Caja",
+              "Fidelización",
+              "Recordatorios",
+              "Reportes",
+              "Equipo",
+              "Horarios",
+              "Auditoría")) {
+        if (!App.session.admin()
+            && Set.of("Proveedores", "Compras", "Auditoría", "Equipo", "Horarios").contains(name))
+          continue;
+        Button nav = button(name, () -> navigate(name));
+        nav.setMaxWidth(Double.MAX_VALUE);
+        sidebar.getChildren().add(nav);
+        MenuItem item = new MenuItem(name);
+        item.setOnAction(e -> navigate(name));
+        menu.getItems().add(item);
+      }
+    }
+    for (var node : sidebar.getChildren())
+      if (node instanceof Button b) {
+        javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
+        icon.setContent(
+            switch (b.getText()) {
+              case "Dashboard" ->
+                  "M1 1 H7 V7 H1 Z M11 1 H17 V7 H11 Z M1 11 H7 V17 H1 Z M11 11 H17 V17 H11 Z";
+              case "Clientes", "Usuarios", "Equipo" ->
+                  "M5 5 A4 4 0 1 0 13 5 A4 4 0 1 0 5 5 M1 18 C1 10 17 10 17 18";
+              case "Citas", "Recordatorios", "Horarios" ->
+                  "M2 3 H16 V17 H2 Z M2 7 H16 M6 1 V5 M12 1 V5";
+              case "Ventas", "Caja", "Compras" -> "M2 4 H16 V16 H2 Z M2 8 H16 M11 12 H15";
+              default -> "M2 2 H16 V17 H2 Z M5 6 H13 M5 10 H13 M5 14 H10";
+            });
+        icon.getStyleClass().add("nav-icon");
+        b.setGraphic(icon);
+        b.setGraphicTextGap(12);
+      }
     refresh();
   }
 
@@ -60,7 +113,7 @@ public final class PanelController {
     boolean phone = width < 650, tablet = width < 1100;
     root.getStyleClass().removeAll("modo-telefono", "modo-tableta", "modo-escritorio");
     root.getStyleClass().add(phone ? "modo-telefono" : tablet ? "modo-tableta" : "modo-escritorio");
-    root.setLeft(phone ? null : sidebar);
+    root.setLeft(phone ? null : navigation);
     menu.setVisible(phone);
     menu.setManaged(phone);
     filtros.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
@@ -116,6 +169,9 @@ public final class PanelController {
 
   private void navigate(String name) {
     module = name;
+    page = 0;
+    query = "";
+    state = "TODOS";
     refresh();
   }
 
@@ -130,7 +186,60 @@ public final class PanelController {
     }
     int current = ++generation;
     titulo.setText(module);
+    boolean standard =
+        Set.of("Dashboard", "Clientes", "Servicios", "Citas", "Usuarios", "Accesos", "Reportes")
+            .contains(module);
+    filtros.setVisible(standard);
+    filtros.setManaged(standard);
     contenido.getChildren().clear();
+    for (var node : sidebar.getChildren())
+      if (node instanceof Button b) {
+        b.getStyleClass().remove("nav-active");
+        if (b.getText().equals(module)) b.getStyleClass().add("nav-active");
+      }
+    if (Set.of(
+            "Inventario",
+            "Lotes",
+            "Proveedores",
+            "Compras",
+            "Ventas",
+            "Caja",
+            "Fidelización",
+            "Recordatorios",
+            "Equipo",
+            "Horarios",
+            "Auditoría")
+        .contains(module)) {
+      contenido.getChildren().add(new EnterprisePane(module, f, t));
+      return;
+    }
+    if (module.equals("Reportes")) {
+      Label hint = new Label("Informes desde datos persistentes · vista previa, impresión y PDF");
+      hint.setWrapText(true);
+      contenido.getChildren().add(hint);
+      for (String kind : List.of("Ventas", "Inventario", "Caja", "Clientes"))
+        contenido
+            .getChildren()
+            .add(
+                button(
+                    "Ver reporte de " + kind,
+                    () ->
+                        App.work(
+                            () -> new EnterpriseService().report(App.session, kind, f, t),
+                            rows -> ReportPreview.open("Reporte de " + kind, rows),
+                            mensaje)));
+      contenido
+          .getChildren()
+          .add(
+              button(
+                  "Reporte de citas",
+                  () ->
+                      App.work(
+                          () -> App.service.report(App.session, f, t),
+                          rows -> ReportPreview.open("Citas", rows),
+                          mensaje)));
+      return;
+    }
     cards = null;
     table = null;
     if (module.equals("Dashboard")) {
@@ -172,13 +281,51 @@ public final class PanelController {
             contenido
                 .getChildren()
                 .addAll(cards, bar, line, new Label("Actividad reciente"), table);
+            if (!App.session.barbero()) {
+              FlowPane quick = new FlowPane(10, 10);
+              quick
+                  .getChildren()
+                  .addAll(
+                      button("＋ Agendar cita", () -> navigate("Citas")),
+                      button("Punto de venta", () -> navigate("Ventas")),
+                      button("Caja", () -> navigate("Caja")));
+              DatePicker calendar = new DatePicker(LocalDate.now());
+              calendar.setPromptText("Consultar agenda diaria");
+              calendar
+                  .valueProperty()
+                  .addListener((o, a, b) -> {
+                    if (b != null) {
+                      desde.setValue(b);
+                      hasta.setValue(b);
+                      navigate("Citas");
+                    }
+                  });
+              quick.getChildren().add(calendar);
+              contenido.getChildren().add(1, quick);
+              Label alerts = new Label("Cargando alertas operativas…");
+              alerts.setWrapText(true);
+              alerts.getStyleClass().add("message");
+              contenido.getChildren().add(2, alerts);
+              App.work(
+                  () -> new EnterpriseService().summary(App.session),
+                  summary -> {
+                    if (current == generation)
+                      alerts.setText(
+                          String.join(
+                              "    •    ",
+                              summary.entrySet().stream()
+                                  .map(e -> e.getKey() + ": " + e.getValue())
+                                  .toList()));
+                  },
+                  alerts);
+            }
             adapt(root.getWidth());
           },
           mensaje);
     } else {
       String selected = module;
       App.work(
-          () -> App.service.list(App.session, selected, f, t),
+          () -> App.service.page(App.session, selected, query, state, f, t, page * 30),
           rows -> {
             if (current != generation) return;
             table = table(rows);
@@ -195,7 +342,7 @@ public final class PanelController {
                   .addAll(
                       button("Crear", () -> edit(null)), button("Editar", () -> edit(selection())));
               if (selected.equals("Clientes") || selected.equals("Servicios"))
-                actions.getChildren().add(button("Eliminar", this::delete));
+                actions.getChildren().add(button("Desactivar", this::delete));
             }
             if (selected.equals("Citas")) {
               actions.getChildren().add(button("Completar", () -> status(true)));
@@ -208,7 +355,52 @@ public final class PanelController {
             }
             if (selected.equals("Usuarios"))
               actions.getChildren().add(button("Restablecer 2FA", this::reset));
-            contenido.getChildren().addAll(actions, table);
+            TextField search = new TextField(query);
+            search.setPromptText("Buscar mientras escribe…");
+            ComboBox<String> statusFilter = new ComboBox<>();
+            statusFilter.getItems().setAll("TODOS", "PENDIENTE", "COMPLETADA", "CANCELADA");
+            statusFilter.setValue(state);
+            statusFilter.setVisible(selected.equals("Citas"));
+            statusFilter.setManaged(selected.equals("Citas"));
+            javafx.animation.PauseTransition pause =
+                new javafx.animation.PauseTransition(javafx.util.Duration.millis(350));
+            pause.setOnFinished(e -> {
+              query = search.getText();
+              page = 0;
+              refresh();
+            });
+            search.textProperty().addListener((o, a, b) -> pause.playFromStart());
+            statusFilter
+                .valueProperty()
+                .addListener((o, a, b) -> {
+                  state = b;
+                  page = 0;
+                  refresh();
+                });
+            Button
+                previous =
+                    button(
+                        "← Anterior",
+                        () -> {
+                          page--;
+                          refresh();
+                        }),
+                next =
+                    button(
+                        "Siguiente →",
+                        () -> {
+                          page++;
+                          refresh();
+                        });
+            previous.setDisable(page == 0);
+            next.setDisable(rows.size() < 30);
+            contenido
+                .getChildren()
+                .addAll(
+                    new HBox(10, search, statusFilter),
+                    actions,
+                    table,
+                    new HBox(12, previous, new Label("Página " + (page + 1)), next));
             adapt(root.getWidth());
           },
           mensaje);
@@ -217,6 +409,16 @@ public final class PanelController {
 
   private Button button(String text, Runnable action) {
     Button b = new Button(text);
+    if (table != null
+        && Set.of(
+                "Editar",
+                "Desactivar",
+                "Completar",
+                "Cancelar cita",
+                "Registrar pago",
+                "Restablecer 2FA")
+            .contains(text))
+      b.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
     b.setOnAction(e -> {
       try {
         action.run();
@@ -240,6 +442,26 @@ public final class PanelController {
       c.setPrefWidth(key.equals("fecha") ? 180 : 145);
       t.getColumns().add(c);
     }
+    TableColumn<Map<String, Object>, Void> detail = new TableColumn<>("Acción");
+    detail.setPrefWidth(100);
+    detail.setSortable(false);
+    detail.setCellFactory(col ->
+        new TableCell<>() {
+          final Button view = new Button("Ver");
+
+          {
+            view.setOnAction(e -> {
+              Map<String, Object> row = getTableView().getItems().get(getIndex());
+              ReportPreview.open("Detalle de " + module, List.of(row));
+            });
+          }
+
+          protected void updateItem(Void v, boolean empty) {
+            super.updateItem(v, empty);
+            setGraphic(empty ? null : view);
+          }
+        });
+    t.getColumns().add(detail);
     t.getItems().setAll(rows);
     return t;
   }
@@ -288,7 +510,7 @@ public final class PanelController {
   private void delete() {
     long id = Store.id(selection(), "id");
     String current = module;
-    if (confirm("¿Eliminar el registro seleccionado?"))
+    if (confirm("¿Desactivar este registro conservando su historial?"))
       App.work(
           () -> {
             App.service.delete(App.session, current, id);

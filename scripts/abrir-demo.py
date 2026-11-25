@@ -8,7 +8,7 @@ if not shutil.which('java'):raise SystemExit('Instale Java 21 o superior y compr
 config=root/'config.demo.properties'
 if not config.exists():raise SystemExit('Ejecute primero python scripts/preparar-demo.py.')
 jar=root/'barberia.jar'
-if not jar.exists():jar=root/'target/barberia-v2-2.0.0.jar'
+if not jar.exists():jar=root/'target/barberia-v3-3.0.0.jar'
 if not jar.exists():raise SystemExit('Falta el JAR: descargue el ZIP de Releases o ejecute mvn package.')
 cmd=['java','-Duser.timezone=America/Santo_Domingo','-Dbarberia.config='+str(config)]
 cmd+=['-cp',str(jar),'edu.unev.barberia.tools.CheckConnection'] if a.check else ['-jar',str(jar)]

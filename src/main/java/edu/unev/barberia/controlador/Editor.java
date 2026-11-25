@@ -57,7 +57,17 @@ public final class Editor {
   private void field(String key, String title, Control control) {
     fields.put(key, control);
     control.setMaxWidth(Double.MAX_VALUE);
-    campos.getChildren().addAll(new Label(title), control);
+    Label label = new Label(title);
+    label.setLabelFor(control);
+    campos.getChildren().addAll(label, control);
+    if (control instanceof TextField tf)
+      tf.textProperty()
+          .addListener((o, a, b) -> {
+            boolean invalid = !key.equals("correo") && !key.equals("clave") && b.isBlank();
+            if (key.equals("correo") && !b.isBlank())
+              invalid = !b.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+");
+            tf.pseudoClassStateChanged(javafx.css.PseudoClass.getPseudoClass("invalid"), invalid);
+          });
   }
 
   private void text(String k, String title) {
@@ -109,7 +119,7 @@ public final class Editor {
         LocalDateTime dt =
             row == null
                 ? LocalDate.now().plusDays(1).atTime(10, 0)
-                : ((java.sql.Timestamp) row.get("fecha")).toLocalDateTime();
+                : EnterprisePane.date(row.get("fecha"));
         field("dia", "Fecha", new DatePicker(dt.toLocalDate()));
         field("hora", "Hora (HH:mm)", new TextField(dt.toLocalTime().toString()));
       }

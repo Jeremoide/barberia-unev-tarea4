@@ -1,0 +1,245 @@
+erDiagram
+  acceso_log {
+    bigint id PK
+    bigint usuario_id FK
+    varchar usuario
+    datetime fecha
+    varchar resultado
+  }
+  agendas {
+    bigint id PK
+    bigint empleado_id FK
+  }
+  auditoria {
+    bigint id PK
+    bigint usuario_id FK
+    varchar accion
+    varchar referencia
+    datetime fecha
+  }
+  cajas {
+    bigint id PK
+    bigint usuario_id FK
+    datetime apertura
+    datetime cierre
+    decimal fondo
+    decimal esperado
+    decimal contado
+    decimal diferencia
+  }
+  categorias_servicio {
+    bigint id PK
+    varchar nombre
+    varchar descripcion
+  }
+  citas {
+    bigint id PK
+    bigint cliente_id FK
+    bigint empleado_id FK
+    bigint servicio_id FK
+    bigint agenda_id FK
+    datetime fecha
+    decimal precio_acordado
+    int duracion_acordada
+    varchar estado
+  }
+  clientes {
+    bigint id PK
+    varchar nombre
+    varchar telefono
+    varchar correo
+    datetime creado
+    tinyint activo
+  }
+  compras {
+    bigint id PK
+    bigint proveedor_id FK
+    bigint usuario_id FK
+    datetime fecha
+    decimal total
+  }
+  detalles_factura {
+    bigint id PK
+    bigint factura_id FK
+    bigint cita_id FK
+    varchar descripcion_servicio
+    decimal importe
+  }
+  empleados {
+    bigint id PK
+    bigint usuario_id FK
+    varchar nombre
+    varchar especialidad
+  }
+  facturas {
+    bigint id PK
+    varchar numero
+    bigint cliente_id FK
+    datetime fecha_emision
+    varchar estado
+  }
+  horarios_trabajo {
+    bigint id PK
+    bigint empleado_id FK
+    int dia_semana
+    time hora_inicio
+    time hora_fin
+  }
+  lotes {
+    bigint id PK
+    bigint producto_id FK
+    bigint compra_id FK
+    varchar codigo
+    date vencimiento
+    decimal costo
+    int cantidad
+  }
+  movimientos_caja {
+    bigint id PK
+    bigint caja_id FK
+    bigint usuario_id FK
+    bigint venta_id FK
+    bigint cita_id FK
+    decimal importe
+    varchar concepto
+    varchar metodo
+    datetime fecha
+  }
+  pagos {
+    bigint id PK
+    bigint cita_id FK
+    decimal monto
+    datetime fecha
+  }
+  productos {
+    bigint id PK
+    varchar codigo
+    varchar nombre
+    varchar categoria
+    decimal precio
+    int minimo
+    tinyint activo
+  }
+  proveedores {
+    bigint id PK
+    varchar nombre
+    varchar telefono
+    tinyint activo
+  }
+  puntos {
+    bigint id PK
+    bigint cliente_id FK
+    bigint venta_id FK
+    bigint cita_id FK
+    int valor
+    varchar concepto
+    datetime fecha
+  }
+  recordatorios {
+    bigint id PK
+    bigint cliente_id FK
+    bigint usuario_id FK
+    varchar titulo
+    varchar categoria
+    varchar prioridad
+    datetime fecha
+    int repetir_dias
+    varchar estado
+  }
+  reglas_puntos {
+    int id PK
+    decimal valor_compra
+    int umbral
+    decimal bono
+  }
+  roles {
+    bigint id PK
+    varchar nombre
+  }
+  servicios {
+    bigint id PK
+    varchar nombre
+    decimal precio
+    int duracion_minutos
+    bigint categoria_id FK
+    tinyint activo
+  }
+  usuarios {
+    bigint id PK
+    varchar nombre
+    varchar usuario
+    varchar correo
+    varchar password_hash
+    bigint rol_id FK
+    tinyint activo
+    int fallos
+    datetime bloqueado_hasta
+    datetime creado
+  }
+  usuario_2fa {
+    bigint usuario_id PK
+    varchar secreto_cifrado
+    tinyint habilitado
+    int intentos
+    bigint ultimo_paso
+  }
+  ventas {
+    bigint id PK
+    varchar numero
+    bigint cliente_id FK
+    bigint caja_id FK
+    bigint usuario_id FK
+    datetime fecha
+    decimal subtotal
+    decimal descuento
+    decimal impuesto
+    decimal total
+    varchar metodo
+    decimal recibido
+    decimal cambio
+    varchar estado
+    varchar motivo
+  }
+  venta_detalles {
+    bigint id PK
+    bigint venta_id FK
+    bigint lote_id FK
+    int cantidad
+    decimal precio
+  }
+  usuarios ||--o{ acceso_log : "usuario_id"
+  empleados ||--o{ agendas : "empleado_id"
+  usuarios ||--o{ auditoria : "usuario_id"
+  usuarios ||--o{ cajas : "usuario_id"
+  agendas ||--o{ citas : "agenda_id"
+  clientes ||--o{ citas : "cliente_id"
+  empleados ||--o{ citas : "empleado_id"
+  agendas ||--o{ citas : "empleado_id"
+  servicios ||--o{ citas : "servicio_id"
+  proveedores ||--o{ compras : "proveedor_id"
+  usuarios ||--o{ compras : "usuario_id"
+  citas ||--o{ detalles_factura : "cita_id"
+  facturas ||--o{ detalles_factura : "factura_id"
+  usuarios ||--o{ empleados : "usuario_id"
+  clientes ||--o{ facturas : "cliente_id"
+  empleados ||--o{ horarios_trabajo : "empleado_id"
+  compras ||--o{ lotes : "compra_id"
+  productos ||--o{ lotes : "producto_id"
+  cajas ||--o{ movimientos_caja : "caja_id"
+  citas ||--o{ movimientos_caja : "cita_id"
+  usuarios ||--o{ movimientos_caja : "usuario_id"
+  ventas ||--o{ movimientos_caja : "venta_id"
+  citas ||--o{ pagos : "cita_id"
+  citas ||--o{ puntos : "cita_id"
+  clientes ||--o{ puntos : "cliente_id"
+  ventas ||--o{ puntos : "venta_id"
+  clientes ||--o{ recordatorios : "cliente_id"
+  usuarios ||--o{ recordatorios : "usuario_id"
+  categorias_servicio ||--o{ servicios : "categoria_id"
+  roles ||--o{ usuarios : "rol_id"
+  usuarios ||--o{ usuario_2fa : "usuario_id"
+  cajas ||--o{ ventas : "caja_id"
+  clientes ||--o{ ventas : "cliente_id"
+  usuarios ||--o{ ventas : "usuario_id"
+  lotes ||--o{ venta_detalles : "lote_id"
+  ventas ||--o{ venta_detalles : "venta_id"

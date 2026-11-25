@@ -1,7 +1,7 @@
 name: Compilar probar y publicar JavaFX
 on:
   push:
-    branches: [main]
+    branches: [main, codex/version-3.0]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -34,7 +34,7 @@ jobs:
       - name: Compilar
         run: mvn -B -ntp compile
       - name: Ejecutar pruebas unitarias
-        run: mvn -B -ntp test "-Dtest=BusinessRulesTest,SecurityTest"
+        run: mvn -B -ntp test "-Dtest=BusinessRulesTest,SecurityTest,EnterpriseRulesTest"
       - name: Generar JAR y distribución
         run: |
           mvn -B -ntp package -DskipTests
@@ -78,6 +78,8 @@ jobs:
         run: |
           mysql --protocol=TCP -h 127.0.0.1 -P 33306 -u root barberia_ci < database/01_schema.sql
           mysql --protocol=TCP -h 127.0.0.1 -P 33306 -u root barberia_ci < database/02_demo.sql
+          mysql --protocol=TCP -h 127.0.0.1 -P 33306 -u root barberia_ci < database/03_v3.sql
+          mysql --protocol=TCP -h 127.0.0.1 -P 33306 -u root barberia_ci < database/04_demo_v3.sql
           python3 - <<'PYCODE'
           import base64,secrets
           from pathlib import Path
@@ -97,9 +99,9 @@ jobs:
             target/surefire-reports/
             target/evidencias/
   publish:
-    name: Publicar versión DevOps 1.0
+    name: Publicar Barbería 3.0
     needs: [build, integration]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/codex/version-3.0' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -114,8 +116,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view devops-v1.0.0 >/dev/null 2>&1; then
-            echo 'La versión 1.0 ya existe y conserva sus archivos originales.'
+          if gh release view v3.0.0 >/dev/null 2>&1; then
+            echo 'La versión 3.0 ya existe y conserva sus archivos originales.'
           else
-            gh release create devops-v1.0.0 release-assets/* --target "$GITHUB_SHA" --title 'Barbería UNEV — Entrega DevOps 1.0' --notes-file LEEME_DEMO.txt
+            gh release create v3.0.0 release-assets/* --target "$GITHUB_SHA" --title 'Barbería UNEV — Versión 3.0' --notes-file LEEME_DEMO.txt
           fi

@@ -39,7 +39,7 @@ public class App extends Application {
     fh.setFormatter(new SimpleFormatter());
     LOG.addHandler(fh);
     auth = new AuthService();
-    stage.setTitle("Barbería UNEV · 2.0");
+    stage.setTitle("Barbería UNEV · 3.0");
     show("login");
     stage.show();
   }
@@ -82,10 +82,12 @@ public class App extends Application {
   }
 
   public static String friendly(Throwable ex) {
+    if (ex instanceof java.sql.SQLException sql && sql.getErrorCode() == 1062)
+      return "Ya existe un registro con ese código, usuario o identificador único.";
     if (ex instanceof java.sql.SQLException
         || ex instanceof com.zaxxer.hikari.pool.HikariPool.PoolInitializationException) {
       return "No se pudo completar la operación en la base de datos. Revise conexión o registros"
-                 + " relacionados. Detalle en logs.";
+          + " relacionados. Detalle en logs.";
     }
     return ex.getMessage() == null ? "No se pudo completar la operación." : ex.getMessage();
   }

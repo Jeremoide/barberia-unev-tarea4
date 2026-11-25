@@ -62,14 +62,15 @@ public final class BarberiaService {
         case "Clientes" -> {
           if (s.barbero())
             throw new SecurityException("No puede consultar el directorio de clientes.");
-          yield Store.query(c, "SELECT id,nombre,telefono,correo FROM clientes ORDER BY nombre");
+          yield Store.query(
+              c, "SELECT id,nombre,telefono,correo FROM clientes WHERE activo=1 ORDER BY nombre");
         }
         case "Servicios" ->
             Store.query(
                 c,
                 "SELECT s.id,s.nombre,s.precio,s.duracion_minutos duracion,s.categoria_id,g.nombre"
                     + " categoria FROM servicios s JOIN categorias_servicio g ON"
-                    + " g.id=s.categoria_id ORDER BY s.nombre");
+                    + " g.id=s.categoria_id WHERE s.activo=1 ORDER BY s.nombre");
         case "Citas" ->
             Store.query(
                 c,
@@ -104,6 +105,91 @@ public final class BarberiaService {
     }
   }
 
+  public List<Map<String, Object>> page(
+      Session s,
+      String module,
+      String query,
+      String state,
+      LocalDate from,
+      LocalDate to,
+      int offset)
+      throws Exception {
+    check(s, "ADMINISTRADOR", "RECEPCIONISTA", "BARBERO");
+    range(from, to);
+    if (offset < 0) throw new IllegalArgumentException("Página inválida.");
+    String q = "%" + Objects.toString(query, "").trim() + "%";
+    try (var c = Database.connection()) {
+      return switch (module) {
+        case "Clientes" -> {
+          s.require("ADMINISTRADOR", "RECEPCIONISTA");
+          yield Store.query(
+              c,
+              "SELECT id,nombre,telefono,correo FROM clientes WHERE activo=1 AND (nombre LIKE ? OR"
+                  + " telefono LIKE ? OR correo LIKE ?) ORDER BY nombre LIMIT 30 OFFSET ?",
+              q,
+              q,
+              q,
+              offset);
+        }
+        case "Servicios" ->
+            Store.query(
+                c,
+                "SELECT s.id,s.nombre,s.precio,s.duracion_minutos duracion,s.categoria_id,g.nombre"
+                    + " categoria FROM servicios s JOIN categorias_servicio g ON"
+                    + " g.id=s.categoria_id WHERE s.activo=1 AND (s.nombre LIKE ? OR g.nombre LIKE"
+                    + " ?) ORDER BY s.nombre LIMIT 30 OFFSET ?",
+                q,
+                q,
+                offset);
+        case "Citas" ->
+            Store.query(
+                c,
+                "SELECT c.id,c.cliente_id,c.empleado_id,c.servicio_id,l.nombre cliente,e.nombre"
+                    + " barbero,v.nombre servicio,c.fecha,c.estado,c.precio_acordado precio FROM"
+                    + " citas c JOIN clientes l ON l.id=c.cliente_id JOIN empleados e ON"
+                    + " e.id=c.empleado_id JOIN servicios v ON v.id=c.servicio_id WHERE c.fecha>=?"
+                    + " AND c.fecha<? AND (l.nombre LIKE ? OR e.nombre LIKE ? OR v.nombre LIKE ?)"
+                    + " AND (?='TODOS' OR c.estado=?) AND (?=1 OR c.empleado_id=?) ORDER BY c.fecha"
+                    + " DESC LIMIT 30 OFFSET ?",
+                from.atStartOfDay(),
+                to.plusDays(1).atStartOfDay(),
+                q,
+                q,
+                q,
+                state,
+                state,
+                s.barbero() ? 0 : 1,
+                s.empleado(),
+                offset);
+        case "Usuarios" -> {
+          s.require("ADMINISTRADOR");
+          yield Store.query(
+              c,
+              "SELECT u.id,u.nombre,u.usuario,u.correo,u.rol_id,r.nombre"
+                  + " rol,u.activo,COALESCE(t.habilitado,0) doble_factor FROM usuarios u JOIN roles"
+                  + " r ON r.id=u.rol_id LEFT JOIN usuario_2fa t ON t.usuario_id=u.id WHERE"
+                  + " u.nombre LIKE ? OR u.usuario LIKE ? ORDER BY u.nombre LIMIT 30 OFFSET ?",
+              q,
+              q,
+              offset);
+        }
+        case "Accesos" -> {
+          s.require("ADMINISTRADOR");
+          yield Store.query(
+              c,
+              "SELECT id,usuario,fecha,resultado FROM acceso_log WHERE fecha>=? AND fecha<? AND"
+                  + " (usuario LIKE ? OR resultado LIKE ?) ORDER BY id DESC LIMIT 30 OFFSET ?",
+              from.atStartOfDay(),
+              to.plusDays(1).atStartOfDay(),
+              q,
+              q,
+              offset);
+        }
+        default -> throw new IllegalArgumentException("Módulo desconocido.");
+      };
+    }
+  }
+
   public List<Option> options(Session s, String module) throws Exception {
     check(s, "ADMINISTRADOR", "RECEPCIONISTA", "BARBERO");
     try (var c = Database.connection()) {
@@ -113,13 +199,14 @@ public final class BarberiaService {
                 Store.query(c, "SELECT id,nombre FROM categorias_servicio ORDER BY nombre");
             case "clientes" -> {
               if (s.barbero()) throw new SecurityException("Operación no permitida.");
-              yield Store.query(c, "SELECT id,nombre FROM clientes ORDER BY nombre");
+              yield Store.query(c, "SELECT id,nombre FROM clientes WHERE activo=1 ORDER BY nombre");
             }
             case "empleados" ->
                 s.barbero()
                     ? Store.query(c, "SELECT id,nombre FROM empleados WHERE id=?", s.empleado())
                     : Store.query(c, "SELECT id,nombre FROM empleados ORDER BY nombre");
-            case "servicios" -> Store.query(c, "SELECT id,nombre FROM servicios ORDER BY nombre");
+            case "servicios" ->
+                Store.query(c, "SELECT id,nombre FROM servicios WHERE activo=1 ORDER BY nombre");
             case "roles" -> {
               s.require("ADMINISTRADOR");
               yield Store.query(c, "SELECT id,nombre FROM roles ORDER BY id");
@@ -141,19 +228,26 @@ public final class BarberiaService {
     email = email.trim();
     if (!email.isEmpty() && !email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+"))
       throw new IllegalArgumentException("Correo inválido.");
-    try (var c = Database.connection()) {
+    final String validatedName = name, validatedEmail = email, validatedPhone = phone;
+    Store.tx(c -> {
       if (id == 0)
         Store.insert(
-            c, "INSERT INTO clientes(nombre,telefono,correo) VALUES (?,?,?)", name, phone, email);
+            c,
+            "INSERT INTO clientes(nombre,telefono,correo) VALUES (?,?,?)",
+            validatedName,
+            validatedPhone,
+            validatedEmail);
       else
         Store.update(
             c,
             "UPDATE clientes SET nombre=?,telefono=?,correo=? WHERE id=?",
-            name,
-            phone,
-            email,
+            validatedName,
+            validatedPhone,
+            validatedEmail,
             id);
-    }
+      EnterpriseService.audit(c, s, "CLIENTE_GUARDADO", id == 0 ? validatedName : id);
+      return null;
+    });
   }
 
   public void service(Session s, long id, String name, BigDecimal price, int minutes, long category)
@@ -163,12 +257,13 @@ public final class BarberiaService {
     if (price == null || price.signum() <= 0 || price.scale() > 2 || minutes < 5 || minutes > 480)
       throw new IllegalArgumentException(
           "Precio positivo con dos decimales y duración entre 5 y 480 minutos.");
-    try (var c = Database.connection()) {
+    final String validatedName = name;
+    Store.tx(c -> {
       if (id == 0)
         Store.insert(
             c,
             "INSERT INTO servicios(nombre,precio,duracion_minutos,categoria_id) VALUES (?,?,?,?)",
-            name,
+            validatedName,
             price,
             minutes,
             category);
@@ -176,12 +271,14 @@ public final class BarberiaService {
         Store.update(
             c,
             "UPDATE servicios SET nombre=?,precio=?,duracion_minutos=?,categoria_id=? WHERE id=?",
-            name,
+            validatedName,
             price,
             minutes,
             category,
             id);
-    }
+      EnterpriseService.audit(c, s, "SERVICIO_GUARDADO", id == 0 ? validatedName : id);
+      return null;
+    });
   }
 
   public void delete(Session s, String module, long id) throws Exception {
@@ -189,15 +286,17 @@ public final class BarberiaService {
     else check(s, "ADMINISTRADOR");
     String sql =
         switch (module) {
-          case "Clientes" -> "DELETE FROM clientes WHERE id=?";
-          case "Servicios" -> "DELETE FROM servicios WHERE id=?";
+          case "Clientes" -> "UPDATE clientes SET activo=0 WHERE id=?";
+          case "Servicios" -> "UPDATE servicios SET activo=0 WHERE id=?";
           default ->
               throw new IllegalArgumentException(
                   "No se permite eliminar este registro; cancele la cita o desactive la cuenta.");
         };
-    try (var c = Database.connection()) {
+    Store.tx(c -> {
       Store.update(c, sql, id);
-    }
+      EnterpriseService.audit(c, s, "DESACTIVAR_" + module, id);
+      return null;
+    });
   }
 
   public void appointment(
@@ -209,8 +308,9 @@ public final class BarberiaService {
     Store.tx(c -> {
       var emp = Store.one(c, "SELECT id FROM empleados WHERE id=? FOR UPDATE", employee);
       if (emp == null) throw new IllegalArgumentException("Barbero inexistente.");
-      Store.one(c, "SELECT id FROM clientes WHERE id=? FOR UPDATE", client);
-      var serv = Store.one(c, "SELECT * FROM servicios WHERE id=?", service);
+      if (Store.one(c, "SELECT id FROM clientes WHERE id=? AND activo=1 FOR UPDATE", client)
+          == null) throw new IllegalArgumentException("Cliente inactivo o inexistente.");
+      var serv = Store.one(c, "SELECT * FROM servicios WHERE id=? AND activo=1", service);
       if (serv == null) throw new IllegalArgumentException("Servicio inexistente.");
       long mins = Store.id(serv, "duracion_minutos");
       if (id != 0) {
@@ -288,6 +388,7 @@ public final class BarberiaService {
         throw new SecurityException("Solo puede completar sus propias citas.");
       Store.update(
           c, "UPDATE citas SET estado=? WHERE id=?", complete ? "COMPLETADA" : "CANCELADA", id);
+      EnterpriseService.audit(c, s, complete ? "CITA_COMPLETADA" : "CITA_CANCELADA", id);
       return null;
     });
   }
@@ -295,6 +396,10 @@ public final class BarberiaService {
   public void pay(Session s, long id) throws Exception {
     check(s, "ADMINISTRADOR", "RECEPCIONISTA");
     Store.tx(c -> {
+      var box =
+          Store.one(
+              c, "SELECT id FROM cajas WHERE usuario_id=? AND cierre IS NULL FOR UPDATE", s.id());
+      if (box == null) throw new IllegalArgumentException("Abra su caja antes de cobrar la cita.");
       var row = Store.one(c, "SELECT * FROM citas WHERE id=? FOR UPDATE", id);
       if (row == null || !Store.text(row, "estado").equals("COMPLETADA"))
         throw new IllegalArgumentException("Complete la cita antes de cobrar.");
@@ -324,6 +429,26 @@ public final class BarberiaService {
           id,
           name,
           row.get("precio_acordado"));
+      Store.insert(
+          c,
+          "INSERT INTO movimientos_caja(caja_id,usuario_id,cita_id,importe,concepto,metodo) VALUES"
+              + " (?,?,?,?,?,?)",
+          box.get("id"),
+          s.id(),
+          id,
+          row.get("precio_acordado"),
+          "COBRO_CITA",
+          "EFECTIVO");
+      Store.insert(
+          c,
+          "INSERT INTO puntos(cliente_id,cita_id,valor,concepto) VALUES (?,?,?,?)",
+          row.get("cliente_id"),
+          id,
+          new BigDecimal(row.get("precio_acordado").toString())
+              .divide(new BigDecimal("100"), 0, java.math.RoundingMode.DOWN)
+              .intValue(),
+          "SERVICIO");
+      EnterpriseService.audit(c, s, "COBRO_CITA", id);
       return null;
     });
   }
@@ -381,6 +506,7 @@ public final class BarberiaService {
               BCrypt.hashpw(password, BCrypt.gensalt(12)),
               id);
       }
+      EnterpriseService.audit(c, s, "USUARIO_GUARDADO", uid);
       if (Store.text(r, "nombre").equals("BARBERO")
           && Store.one(c, "SELECT id FROM empleados WHERE usuario_id=?", uid) == null) {
         long e =
@@ -495,7 +621,7 @@ public final class BarberiaService {
           s.barbero()
               ? "c.fecha,v.nombre servicio,c.estado"
               : "c.fecha,l.nombre cliente,e.nombre barbero,v.nombre servicio,c.estado,p.monto"
-                    + " cobrado";
+                  + " cobrado";
       return Store.query(
           c,
           "SELECT "

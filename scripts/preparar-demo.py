@@ -3,7 +3,7 @@
 import argparse, base64, json, os, secrets, shutil, subprocess, time
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-a=argparse.ArgumentParser();a.add_argument('--engine',choices=['docker','podman']);a.add_argument('--port',type=int,default=3310);a.add_argument('--name',default='barberia-devops-demo');o=a.parse_args()
+a=argparse.ArgumentParser();a.add_argument('--profile',default='demo');a.add_argument('--engine',choices=['docker','podman']);a.add_argument('--port',type=int,default=3313);a.add_argument('--name',default='barberia-3-demo');o=a.parse_args()
 engine=o.engine or next((e for e in ['docker','podman'] if shutil.which(e)),None)
 if not engine: raise SystemExit('Instale e inicie Docker Desktop/Engine o Podman. Después repita este comando.')
 def run(args):
@@ -12,8 +12,9 @@ def run(args):
  return r.stdout
 if not 1024<=o.port<=65535: raise SystemExit('Puerto inválido.')
 if not o.name.replace('-','').replace('_','').isalnum(): raise SystemExit('Nombre de contenedor inválido.')
-state=ROOT/'.demo';state.mkdir(exist_ok=True);os.chmod(state,0o700)
-env=state/'database.env';config=ROOT/'config.demo.properties'
+if not o.profile.isalnum():raise SystemExit('Perfil inválido.')
+state=ROOT/('.demo' if o.profile=='demo' else '.demo-'+o.profile);state.mkdir(exist_ok=True);os.chmod(state,0o700)
+env=state/'database.env';config=ROOT/('config.'+o.profile+'.properties')
 if not env.exists():
  if config.exists(): raise SystemExit('Existe configuración sin su estado asociado. Use otra carpeta; no se sobrescribió.')
  password=secrets.token_hex(24)
@@ -25,7 +26,7 @@ else:
  if not config.exists(): raise SystemExit('Falta config.demo.properties. No se modificaron las credenciales existentes.')
  if f'127.0.0.1:{o.port}/' not in config.read_text(): raise SystemExit('El puerto no coincide con la configuración existente. Repita usando el puerto original.')
 init=state/'init';init.mkdir(exist_ok=True)
-for name in ['01_schema.sql','02_demo.sql']:shutil.copyfile(ROOT/'database'/name,init/name)
+for name in ['01_schema.sql','02_demo.sql','03_v3.sql','04_demo_v3.sql']:shutil.copyfile(ROOT/'database'/name,init/name)
 r=subprocess.run([engine,'inspect',o.name],capture_output=True,text=True)
 if r.returncode==0:
  info=json.loads(r.stdout)[0]
@@ -38,5 +39,5 @@ for _ in range(90):
  if r.returncode==0:break
  time.sleep(2)
 else:raise SystemExit('La base no terminó de iniciar. Revise el contenedor; no se borraron sus datos.')
-print('Base de demostración lista. Configuración privada: config.demo.properties. Ejecute python scripts/abrir-demo.py')
+print('Base de demostración lista. Configuración privada: '+config.name+'. Para la demo ejecute python scripts/abrir-demo.py')
 print('Usuarios: admin.demo, recepcion.demo y barbero.demo. Consulte sus claves de práctica en LEEME_DEMO.txt; cada cuenta vincula su propio Authenticator.')

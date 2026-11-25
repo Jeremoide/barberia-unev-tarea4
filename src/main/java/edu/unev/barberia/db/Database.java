@@ -54,7 +54,7 @@ public final class Database {
       c.setMaximumPoolSize(4);
       c.setConnectionTimeout(10000);
       c.setValidationTimeout(3000);
-      c.setPoolName("BarberiaV2");
+      c.setPoolName("BarberiaV3");
       pool = new HikariDataSource(c);
     }
     return pool.getConnection();

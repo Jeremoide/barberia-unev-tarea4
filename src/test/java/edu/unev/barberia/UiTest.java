@@ -194,6 +194,100 @@ class UiTest {
         return null;
       });
       shot("clientes_final");
+      for (String module :
+          java.util.List.of(
+              "Inventario",
+              "Lotes",
+              "Compras",
+              "Ventas",
+              "Caja",
+              "Fidelización",
+              "Recordatorios",
+              "Equipo",
+              "Horarios",
+              "Auditoría",
+              "Reportes")) {
+        click(module);
+        waitFor(() -> ((Label) root().lookup("#titulo")).getText().equals(module));
+        Thread.sleep(250);
+        shot("v3_" + module.replace('í', 'i').replace('ó', 'o'));
+      }
+      click("Inventario");
+      Thread.sleep(300);
+      Platform.runLater(() -> button(root(), "＋ Nuevo producto").fire());
+      waitFor(() ->
+          Window.getWindows().stream()
+              .anyMatch(w ->
+                  w instanceof Stage st
+                      && st.isShowing()
+                      && st.getTitle().contains("Nuevo producto")));
+      Stage productModal =
+          fx(() ->
+              (Stage)
+                  Window.getWindows().stream()
+                      .filter(w ->
+                          w instanceof Stage st
+                              && st.isShowing()
+                              && st.getTitle().contains("Nuevo producto"))
+                      .findFirst()
+                      .orElseThrow());
+      fx(() -> {
+        button(productModal.getScene().getRoot(), "Guardar").fire();
+        return null;
+      });
+      Thread.sleep(200);
+      fx(() -> {
+        assertTrue(
+            productModal.getScene().getRoot().lookupAll(".label").stream()
+                .anyMatch(n -> n instanceof Label l && l.getText().contains("Complete")));
+        WritableImage im = productModal.getScene().snapshot(null);
+        ImageIO.write(
+            SwingFXUtils.fromFXImage(im, null),
+            "png",
+            images.resolve("v3_modal_producto.png").toFile());
+        productModal.close();
+        return null;
+      });
+
+      click("Ventas");
+      Thread.sleep(300);
+      Platform.runLater(() -> button(root(), "＋ Nueva venta").fire());
+      waitFor(() ->
+          Window.getWindows().stream()
+              .anyMatch(w ->
+                  w instanceof Stage st
+                      && st.isShowing()
+                      && st.getTitle().startsWith("Punto de venta")));
+      Stage cartModal =
+          fx(() ->
+              (Stage)
+                  Window.getWindows().stream()
+                      .filter(w ->
+                          w instanceof Stage st
+                              && st.isShowing()
+                              && st.getTitle().startsWith("Punto de venta"))
+                      .findFirst()
+                      .orElseThrow());
+      Thread.sleep(400);
+      fx(() -> {
+        for (Node node : cartModal.getScene().getRoot().lookupAll(".combo-box"))
+          if (node instanceof ComboBox<?> combo
+              && combo.getItems().stream().findFirst().orElse(null)
+                  instanceof edu.unev.barberia.service.BarberiaService.Option)
+            combo.getSelectionModel().selectFirst();
+        button(cartModal.getScene().getRoot(), "Añadir al carrito").fire();
+        return null;
+      });
+      fx(() -> {
+        assertTrue(
+            cartModal.getScene().getRoot().lookupAll(".list-view").stream()
+                .anyMatch(n -> n instanceof ListView<?> list && list.getItems().size() == 1));
+        WritableImage im = cartModal.getScene().snapshot(null);
+        ImageIO.write(
+            SwingFXUtils.fromFXImage(im, null), "png", images.resolve("v3_carrito.png").toFile());
+        cartModal.close();
+        return null;
+      });
       for (String role : new String[] {"recepcion", "barbero"}) {
         click("Cerrar sesión");
         waitFor(() -> root().lookup("#usuario") != null && root().lookup("#clave") != null);

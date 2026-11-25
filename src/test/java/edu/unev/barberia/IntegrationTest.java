@@ -42,6 +42,9 @@ class IntegrationTest {
         else if (s.barbero()) barber = s;
         else recep = s;
       }
+      for (Session cashier : List.of(admin, recep))
+        if (Store.one(c, "SELECT id FROM cajas WHERE usuario_id=? AND cierre IS NULL", cashier.id())
+            == null) new EnterpriseService().open(cashier, new BigDecimal("0"));
     }
   }
 
@@ -118,8 +121,7 @@ class IntegrationTest {
     assertFalse(report.getFirst().containsKey("cobrado"));
     Path path = Files.createTempFile("barberia-report-", ".xlsx");
     try {
-      new ReportService()
-          .export(barber, from, to, path);
+      new ReportService().export(barber, from, to, path);
       try (var book = new org.apache.poi.xssf.usermodel.XSSFWorkbook(path.toFile())) {
         assertTrue(
             book.getSheetAt(0)
@@ -196,6 +198,8 @@ class IntegrationTest {
           Store.update(c, "DELETE FROM detalles_factura WHERE cita_id=?", citaId);
           if (detail != null)
             Store.update(c, "DELETE FROM facturas WHERE id=?", detail.get("factura_id"));
+          Store.update(c, "DELETE FROM puntos WHERE cita_id=?", citaId);
+          Store.update(c, "DELETE FROM movimientos_caja WHERE cita_id=?", citaId);
           Store.update(c, "DELETE FROM pagos WHERE cita_id=?", citaId);
           Store.update(c, "DELETE FROM citas WHERE id=?", citaId);
         }

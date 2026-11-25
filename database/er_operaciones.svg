@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="1810" viewBox="0 0 2100 1810">
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#3f719d"/></marker></defs>
+<rect width="100%" height="100%" fill="#f4f7fb"/>
+<text x="30" y="38" font-family="sans-serif" font-size="25" fill="#142944">Barbería 3.0 · Entidad relación · operaciones</text>
+<path d="M240,1385 Q280,70 240,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1260,525 Q790,70 240,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M240,525 Q790,70 1260,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M240,525 Q280,70 240,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M750,525 Q535,485 240,540" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M750,525 Q1300,70 1770,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M750,955 Q1045,500 1260,540" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M750,955 Q535,70 240,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M750,955 Q1300,500 1770,540" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1260,955 Q1045,70 750,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1260,955 Q1555,500 1770,540" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1770,955 Q1300,70 750,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1770,955 Q1045,70 240,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1770,525 Q1555,485 1260,540" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1770,525 Q1300,70 750,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1770,525 Q1045,70 240,110" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M240,955 Q535,500 750,540" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M240,955 Q1045,500 1770,540" fill="none" stroke="#6485a7" stroke-opacity="0.45" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="70" width="465" height="275" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="30" y="70" width="465" height="38" rx="6" fill="#173252"/>
+<text x="43" y="96" font-family="sans-serif" font-size="20" fill="white">usuarios</text>
+<text x="40" y="131" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="40" y="153" font-family="sans-serif" font-size="15" fill="#183754">   nombre : varchar</text>
+<text x="40" y="175" font-family="sans-serif" font-size="15" fill="#183754">   usuario : varchar</text>
+<text x="40" y="197" font-family="sans-serif" font-size="15" fill="#183754">   correo : varchar</text>
+<text x="40" y="219" font-family="sans-serif" font-size="15" fill="#183754">   password_hash : varchar</text>
+<text x="40" y="241" font-family="sans-serif" font-size="15" fill="#183754">FK rol_id : bigint → roles</text>
+<text x="40" y="263" font-family="sans-serif" font-size="15" fill="#183754">   activo : tinyint</text>
+<text x="40" y="285" font-family="sans-serif" font-size="15" fill="#183754">   fallos : int</text>
+<text x="40" y="307" font-family="sans-serif" font-size="15" fill="#183754">   bloqueado_hasta : datetime</text>
+<text x="40" y="329" font-family="sans-serif" font-size="15" fill="#183754">   creado : datetime</text>
+<rect x="540" y="70" width="465" height="187" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="540" y="70" width="465" height="38" rx="6" fill="#173252"/>
+<text x="553" y="96" font-family="sans-serif" font-size="20" fill="white">clientes</text>
+<text x="550" y="131" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="550" y="153" font-family="sans-serif" font-size="15" fill="#183754">   nombre : varchar</text>
+<text x="550" y="175" font-family="sans-serif" font-size="15" fill="#183754">   telefono : varchar</text>
+<text x="550" y="197" font-family="sans-serif" font-size="15" fill="#183754">   correo : varchar</text>
+<text x="550" y="219" font-family="sans-serif" font-size="15" fill="#183754">   creado : datetime</text>
+<text x="550" y="241" font-family="sans-serif" font-size="15" fill="#183754">   activo : tinyint</text>
+<rect x="1050" y="70" width="465" height="143" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="1050" y="70" width="465" height="38" rx="6" fill="#173252"/>
+<text x="1063" y="96" font-family="sans-serif" font-size="20" fill="white">proveedores</text>
+<text x="1060" y="131" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="1060" y="153" font-family="sans-serif" font-size="15" fill="#183754">   nombre : varchar</text>
+<text x="1060" y="175" font-family="sans-serif" font-size="15" fill="#183754">   telefono : varchar</text>
+<text x="1060" y="197" font-family="sans-serif" font-size="15" fill="#183754">   activo : tinyint</text>
+<rect x="1560" y="70" width="465" height="209" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="1560" y="70" width="465" height="38" rx="6" fill="#173252"/>
+<text x="1573" y="96" font-family="sans-serif" font-size="20" fill="white">productos</text>
+<text x="1570" y="131" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="1570" y="153" font-family="sans-serif" font-size="15" fill="#183754">   codigo : varchar</text>
+<text x="1570" y="175" font-family="sans-serif" font-size="15" fill="#183754">   nombre : varchar</text>
+<text x="1570" y="197" font-family="sans-serif" font-size="15" fill="#183754">   categoria : varchar</text>
+<text x="1570" y="219" font-family="sans-serif" font-size="15" fill="#183754">   precio : decimal</text>
+<text x="1570" y="241" font-family="sans-serif" font-size="15" fill="#183754">   minimo : int</text>
+<text x="1570" y="263" font-family="sans-serif" font-size="15" fill="#183754">   activo : tinyint</text>
+<rect x="30" y="500" width="465" height="165" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="30" y="500" width="465" height="38" rx="6" fill="#173252"/>
+<text x="43" y="526" font-family="sans-serif" font-size="20" fill="white">compras</text>
+<text x="40" y="561" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="40" y="583" font-family="sans-serif" font-size="15" fill="#183754">FK proveedor_id : bigint → proveedores</text>
+<text x="40" y="605" font-family="sans-serif" font-size="15" fill="#183754">FK usuario_id : bigint → usuarios</text>
+<text x="40" y="627" font-family="sans-serif" font-size="15" fill="#183754">   fecha : datetime</text>
+<text x="40" y="649" font-family="sans-serif" font-size="15" fill="#183754">   total : decimal</text>
+<rect x="540" y="500" width="465" height="209" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="540" y="500" width="465" height="38" rx="6" fill="#173252"/>
+<text x="553" y="526" font-family="sans-serif" font-size="20" fill="white">lotes</text>
+<text x="550" y="561" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="550" y="583" font-family="sans-serif" font-size="15" fill="#183754">FK producto_id : bigint → productos</text>
+<text x="550" y="605" font-family="sans-serif" font-size="15" fill="#183754">FK compra_id : bigint → compras</text>
+<text x="550" y="627" font-family="sans-serif" font-size="15" fill="#183754">   codigo : varchar</text>
+<text x="550" y="649" font-family="sans-serif" font-size="15" fill="#183754">   vencimiento : date</text>
+<text x="550" y="671" font-family="sans-serif" font-size="15" fill="#183754">   costo : decimal</text>
+<text x="550" y="693" font-family="sans-serif" font-size="15" fill="#183754">   cantidad : int</text>
+<rect x="1050" y="500" width="465" height="231" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="1050" y="500" width="465" height="38" rx="6" fill="#173252"/>
+<text x="1063" y="526" font-family="sans-serif" font-size="20" fill="white">cajas</text>
+<text x="1060" y="561" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="1060" y="583" font-family="sans-serif" font-size="15" fill="#183754">FK usuario_id : bigint → usuarios</text>
+<text x="1060" y="605" font-family="sans-serif" font-size="15" fill="#183754">   apertura : datetime</text>
+<text x="1060" y="627" font-family="sans-serif" font-size="15" fill="#183754">   cierre : datetime</text>
+<text x="1060" y="649" font-family="sans-serif" font-size="15" fill="#183754">   fondo : decimal</text>
+<text x="1060" y="671" font-family="sans-serif" font-size="15" fill="#183754">   esperado : decimal</text>
+<text x="1060" y="693" font-family="sans-serif" font-size="15" fill="#183754">   contado : decimal</text>
+<text x="1060" y="715" font-family="sans-serif" font-size="15" fill="#183754">   diferencia : decimal</text>
+<rect x="1560" y="500" width="465" height="385" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="1560" y="500" width="465" height="38" rx="6" fill="#173252"/>
+<text x="1573" y="526" font-family="sans-serif" font-size="20" fill="white">ventas</text>
+<text x="1570" y="561" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="1570" y="583" font-family="sans-serif" font-size="15" fill="#183754">   numero : varchar</text>
+<text x="1570" y="605" font-family="sans-serif" font-size="15" fill="#183754">FK cliente_id : bigint → clientes</text>
+<text x="1570" y="627" font-family="sans-serif" font-size="15" fill="#183754">FK caja_id : bigint → cajas</text>
+<text x="1570" y="649" font-family="sans-serif" font-size="15" fill="#183754">FK usuario_id : bigint → usuarios</text>
+<text x="1570" y="671" font-family="sans-serif" font-size="15" fill="#183754">   fecha : datetime</text>
+<text x="1570" y="693" font-family="sans-serif" font-size="15" fill="#183754">   subtotal : decimal</text>
+<text x="1570" y="715" font-family="sans-serif" font-size="15" fill="#183754">   descuento : decimal</text>
+<text x="1570" y="737" font-family="sans-serif" font-size="15" fill="#183754">   impuesto : decimal</text>
+<text x="1570" y="759" font-family="sans-serif" font-size="15" fill="#183754">   total : decimal</text>
+<text x="1570" y="781" font-family="sans-serif" font-size="15" fill="#183754">   metodo : varchar</text>
+<text x="1570" y="803" font-family="sans-serif" font-size="15" fill="#183754">   recibido : decimal</text>
+<text x="1570" y="825" font-family="sans-serif" font-size="15" fill="#183754">   cambio : decimal</text>
+<text x="1570" y="847" font-family="sans-serif" font-size="15" fill="#183754">   estado : varchar</text>
+<text x="1570" y="869" font-family="sans-serif" font-size="15" fill="#183754">   motivo : varchar</text>
+<rect x="30" y="930" width="465" height="165" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="30" y="930" width="465" height="38" rx="6" fill="#173252"/>
+<text x="43" y="956" font-family="sans-serif" font-size="20" fill="white">venta_detalles</text>
+<text x="40" y="991" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="40" y="1013" font-family="sans-serif" font-size="15" fill="#183754">FK venta_id : bigint → ventas</text>
+<text x="40" y="1035" font-family="sans-serif" font-size="15" fill="#183754">FK lote_id : bigint → lotes</text>
+<text x="40" y="1057" font-family="sans-serif" font-size="15" fill="#183754">   cantidad : int</text>
+<text x="40" y="1079" font-family="sans-serif" font-size="15" fill="#183754">   precio : decimal</text>
+<rect x="540" y="930" width="465" height="253" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="540" y="930" width="465" height="38" rx="6" fill="#173252"/>
+<text x="553" y="956" font-family="sans-serif" font-size="20" fill="white">movimientos_caja</text>
+<text x="550" y="991" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="550" y="1013" font-family="sans-serif" font-size="15" fill="#183754">FK caja_id : bigint → cajas</text>
+<text x="550" y="1035" font-family="sans-serif" font-size="15" fill="#183754">FK usuario_id : bigint → usuarios</text>
+<text x="550" y="1057" font-family="sans-serif" font-size="15" fill="#183754">FK venta_id : bigint → ventas</text>
+<text x="550" y="1079" font-family="sans-serif" font-size="15" fill="#183754">FK cita_id : bigint → citas</text>
+<text x="550" y="1101" font-family="sans-serif" font-size="15" fill="#183754">   importe : decimal</text>
+<text x="550" y="1123" font-family="sans-serif" font-size="15" fill="#183754">   concepto : varchar</text>
+<text x="550" y="1145" font-family="sans-serif" font-size="15" fill="#183754">   metodo : varchar</text>
+<text x="550" y="1167" font-family="sans-serif" font-size="15" fill="#183754">   fecha : datetime</text>
+<rect x="1050" y="930" width="465" height="209" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="1050" y="930" width="465" height="38" rx="6" fill="#173252"/>
+<text x="1063" y="956" font-family="sans-serif" font-size="20" fill="white">puntos</text>
+<text x="1060" y="991" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="1060" y="1013" font-family="sans-serif" font-size="15" fill="#183754">FK cliente_id : bigint → clientes</text>
+<text x="1060" y="1035" font-family="sans-serif" font-size="15" fill="#183754">FK venta_id : bigint → ventas</text>
+<text x="1060" y="1057" font-family="sans-serif" font-size="15" fill="#183754">FK cita_id : bigint → citas</text>
+<text x="1060" y="1079" font-family="sans-serif" font-size="15" fill="#183754">   valor : int</text>
+<text x="1060" y="1101" font-family="sans-serif" font-size="15" fill="#183754">   concepto : varchar</text>
+<text x="1060" y="1123" font-family="sans-serif" font-size="15" fill="#183754">   fecha : datetime</text>
+<rect x="1560" y="930" width="465" height="253" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="1560" y="930" width="465" height="38" rx="6" fill="#173252"/>
+<text x="1573" y="956" font-family="sans-serif" font-size="20" fill="white">recordatorios</text>
+<text x="1570" y="991" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="1570" y="1013" font-family="sans-serif" font-size="15" fill="#183754">FK cliente_id : bigint → clientes</text>
+<text x="1570" y="1035" font-family="sans-serif" font-size="15" fill="#183754">FK usuario_id : bigint → usuarios</text>
+<text x="1570" y="1057" font-family="sans-serif" font-size="15" fill="#183754">   titulo : varchar</text>
+<text x="1570" y="1079" font-family="sans-serif" font-size="15" fill="#183754">   categoria : varchar</text>
+<text x="1570" y="1101" font-family="sans-serif" font-size="15" fill="#183754">   prioridad : varchar</text>
+<text x="1570" y="1123" font-family="sans-serif" font-size="15" fill="#183754">   fecha : datetime</text>
+<text x="1570" y="1145" font-family="sans-serif" font-size="15" fill="#183754">   repetir_dias : int</text>
+<text x="1570" y="1167" font-family="sans-serif" font-size="15" fill="#183754">   estado : varchar</text>
+<rect x="30" y="1360" width="465" height="165" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="30" y="1360" width="465" height="38" rx="6" fill="#173252"/>
+<text x="43" y="1386" font-family="sans-serif" font-size="20" fill="white">auditoria</text>
+<text x="40" y="1421" font-family="sans-serif" font-size="15" fill="#183754">PK id : bigint</text>
+<text x="40" y="1443" font-family="sans-serif" font-size="15" fill="#183754">FK usuario_id : bigint → usuarios</text>
+<text x="40" y="1465" font-family="sans-serif" font-size="15" fill="#183754">   accion : varchar</text>
+<text x="40" y="1487" font-family="sans-serif" font-size="15" fill="#183754">   referencia : varchar</text>
+<text x="40" y="1509" font-family="sans-serif" font-size="15" fill="#183754">   fecha : datetime</text>
+<rect x="540" y="1360" width="465" height="143" rx="7" fill="white" stroke="#294a6e" stroke-width="2"/>
+<rect x="540" y="1360" width="465" height="38" rx="6" fill="#173252"/>
+<text x="553" y="1386" font-family="sans-serif" font-size="20" fill="white">reglas_puntos</text>
+<text x="550" y="1421" font-family="sans-serif" font-size="15" fill="#183754">PK id : int</text>
+<text x="550" y="1443" font-family="sans-serif" font-size="15" fill="#183754">   valor_compra : decimal</text>
+<text x="550" y="1465" font-family="sans-serif" font-size="15" fill="#183754">   umbral : int</text>
+<text x="550" y="1487" font-family="sans-serif" font-size="15" fill="#183754">   bono : decimal</text>
+</svg>

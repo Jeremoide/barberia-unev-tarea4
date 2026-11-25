@@ -1,101 +1,119 @@
-# Barbería UNEV 2.0
+# Barbería UNEV 3.0
 
-Aplicación JavaFX de escritorio con persistencia JDBC, perfiles de acceso, autenticación TOTP y panel de indicadores. Copia independiente del proyecto académico anterior; no sustituye sus archivos ni su base de datos.
+Aplicación de escritorio JavaFX para citas, servicios, clientes, inventario, ventas, caja y fidelización. Autor: Jeremy Peguero Almonte, matrícula 2022-3200298.
 
-## Entrega DevOps y descarga para compañeros
+Esta versión amplía la 2.0 sin modificar su carpeta ni la Release DevOps anterior. La rama `codex/version-3.0` contiene la nueva versión. Los datos de demostración son ficticios y están persistidos en una base independiente; no representan ventas reales.
 
-La aplicación conserva su versión 2.0.0. La publicación académica de distribución y pruebas se identifica como **devops-v1.0.0**.
+## Inicio rápido
 
-- [Descargar distribución Windows o Linux x86_64](https://github.com/Jeremoide/barberia-unev-tarea4/releases/tag/devops-v1.0.0)
-- [Ver compilaciones y pruebas automáticas](https://github.com/Jeremoide/barberia-unev-tarea4/actions/workflows/devops.yml)
+Requisitos: Java 21 o superior, Python 3.10 o superior, Docker o Podman iniciado y acceso a Internet la primera vez para descargar MariaDB. En Linux se requiere GTK 3. Los paquetes son para equipos x64. Windows usa `python` y Linux puede usar `python3`.
 
-Elija el ZIP de su sistema. JavaFX es una aplicación de escritorio; no se ejecuta dentro del navegador. No existe una API o backend web en este proyecto, así que no corresponde una URL de backend. El servicio de publicación es GitHub Releases.
+1. Descargue el ZIP correspondiente a su sistema desde la Release `v3.0.0` y extráigalo.
+2. Abra una terminal dentro de la carpeta extraída.
+3. Prepare la base: `python scripts/preparar-demo.py`.
+4. Compruebe JDBC: `python scripts/abrir-demo.py --check`.
+5. Abra la aplicación: `python scripts/abrir-demo.py`.
 
-### Ejecutar sin rutas de la computadora del autor
+Desde el código fuente, ejecute primero `mvn -B package -DskipTests` y después los pasos anteriores. El script detecta el JAR de `target/`. No necesita rutas de la computadora del autor.
 
-Requisitos: Java 21+, Python 3.10+, Docker Desktop/Engine o Podman iniciado, sesión gráfica; Linux necesita GTK 3. El ZIP contiene su JAR con dependencias nativas para el sistema elegido. No necesita Maven para ejecutar el ZIP.
+La preparación crea el contenedor `barberia-3-demo`, un volumen propio, la base `barberia_demo` y escucha solo en `127.0.0.1:3313`. Genera credenciales aleatorias y una clave AES privada en `.demo/` y `config.demo.properties`. No sobrescribe claves existentes. Para usar otro puerto, utilice una carpeta nueva y `--port 3318 --name barberia-3-otra`; repita siempre con ese mismo puerto/nombre. No modifique puertos de una instalación ya creada.
 
-1. Extraer **todo** el ZIP y abrir una terminal en la carpeta `Barberia-DevOps`.
-2. Ejecutar `python scripts/preparar-demo.py` (en Linux puede ser `python3`; para Podman añadir `--engine podman`). La primera descarga requiere Internet.
-3. Comprobar JDBC con `python scripts/abrir-demo.py --check`.
-4. Abrir con `python scripts/abrir-demo.py`.
+## Acceso de práctica
 
-El preparador crea una base aislada en 127.0.0.1:3310, credenciales aleatorias privadas y un volumen persistente. No usa el servidor ni los datos de MyASP.NET del autor. Para detener sin borrar datos: `docker stop barberia-devops-demo` o `podman stop barberia-devops-demo`. No ejecutar `volume rm` ni borrar datos de un compañero.
+| Rol | Usuario | Clave de práctica |
+|---|---|---|
+| Administrador | admin.demo | AdminDemo2026! |
+| Recepcionista | recepcion.demo | RecepDemo2026! |
+| Barbero | barbero.demo | BarberoDemo2026! |
 
-Las cuentas y claves de **práctica** están en `LEEME_DEMO.txt`. Cada instalación utiliza su propia base y su clave de cifrado. No subir `.demo/`, `config.demo.properties` ni la configuración de nube al repositorio. Si el puerto está ocupado, preparar una carpeta nueva usando `--port 3311 --name barberia-devops-otra`.
+En el primer ingreso, vincule el QR con una aplicación Authenticator y escriba su código. Cada cuenta se vincula por separado. Estas claves son de cuentas ficticias de demostración, no credenciales del servidor. Para uso real cambie las claves, cree sus usuarios y mantenga privada la configuración. Nunca publique QR, secretos TOTP, respaldos ni datos personales.
 
-### JUnit y automatización
+## Tres ampliaciones principales
 
-Con el código fuente y Maven: `mvn -B test "-Dtest=BusinessRulesTest,SecurityTest"`. Ejecuta siete casos de reglas del negocio y tres de seguridad sin base de datos. `BusinessRulesTest` incluye dos nombres válidos, un nombre en blanco inválido, límites de 150/151 caracteres y rangos de fechas válido/inválido.
+1. **Inventario y compras:** productos por código/categoría/precio, proveedores, entradas por lotes, vencimientos, stock mínimo, ajustes con motivo y consumo FEFO (vence primero, sale primero). No vende lotes vencidos ni existencias insuficientes.
+2. **Punto de venta y caja:** carrito con varias líneas, descuentos, porcentaje de impuesto configurable según corresponda, efectivo/tarjeta/transferencia, cambio, factura consultable y PDF. Apertura, cierre y arqueo; citas y productos generan movimientos en la misma caja. Anulación/devolución completa autorizada, restituye stock y revierte puntos, sin borrar documentos. No admite anulaciones de cajas cerradas ni devoluciones parciales.
+3. **Fidelización y seguimiento:** puntos persistentes por productos y servicios, niveles Bronce/Plata/Oro, canje controlado de 100 puntos por RD$100, recordatorios con prioridad/categoría/fecha/recurrencia, completar o posponer sin duplicar repeticiones. Son alertas dentro de la aplicación; no envía WhatsApp, correos ni notificaciones de un servicio externo.
 
-El workflow `.github/workflows/devops.yml` se activa con push a main, pull request o ejecución manual. Compila y ejecuta JUnit en Linux y Windows, genera los ZIP, verifica integración y GUI en una base MySQL efímera con Xvfb y publica la versión únicamente si todos los jobs requeridos pasan. Si falla una prueba, se conservan los reportes JUnit, fallan sus dependencias y no se crea una nueva publicación. El caché de Maven acelera dependencias; los artefactos contienen resultados y paquetes. El token de publicación es el GITHUB_TOKEN efímero del job, no un token personal guardado en código. La Release 1.0 es inmutable: ejecuciones posteriores no sustituyen sus archivos.
+## Operaciones y permisos
 
-Para integración local, use únicamente una base de práctica aislada: `BARBERIA_DB_TEST=true mvn test -Dbarberia.config=config.demo.properties -Dtest=IntegrationTest` en Bash. En PowerShell: `$env:BARBERIA_DB_TEST='true'` y después el comando Maven. Las cuatro pruebas verifican CRUD, permisos y Excel, citas y cobros, y login/2FA. La prueba GUI es opcional localmente, necesita las contraseñas de las tres cuentas demo en configuración privada y restablece sus vinculaciones 2FA; CI la ejecuta solo sobre su base desechable.
+- Administrador: catálogo, proveedores, compras, lotes, horarios, usuarios, reportes, caja, auditoría y anulaciones.
+- Recepcionista: clientes, citas, cobros, ventas, su caja, inventario de consulta, fidelización, recordatorios y reportes. No administra compras, proveedores, usuarios ni anulaciones de ventas.
+- Barbero: agenda y estadísticas de sus citas, servicios y completar sus propias citas. No tiene directorio de clientes, inventario, ventas, caja ni reportes financieros.
+- Los servicios vuelven a comprobar rol, cuenta activa y expiración de sesión; ocultar botones no sustituye la autorización.
+- Para agregar un barbero: cree un usuario con rol BARBERO. Se crea su empleado, agenda y jornada inicial. El administrador ajusta Horarios, con días 1=lunes a 7=domingo. Los cambios no pueden dejar citas pendientes fuera de horario.
 
-Los reportes automáticos están en `target/surefire-reports/` y las capturas GUI en `target/evidencias/`. Las pruebas locales/CI no sustituyen el acta del compañero ni prueban por sí solas un segundo equipo físico.
+## Recorrido de demostración
 
-## Requisitos y ejecución
+1. Ingrese como administrador y revise indicadores, alertas, accesos rápidos y agenda por fecha.
+2. En Proveedores registre uno. En Inventario cree un producto con código único y precio.
+3. En Compras registre proveedor, producto, lote, vencimiento, cantidad y costo. Compruebe el stock en Inventario/Lotes.
+4. En Caja abra con RD$500. En Ventas cree un carrito, seleccione cliente y método de pago. El importe se recalcula; el servicio vuelve a calcularlo con precios de la base.
+5. Consulte la factura y exporte su PDF. Anule solo si corresponde y explique la devolución completa.
+6. Cree una cita futura dentro del horario del barbero, complétela y registre el pago con caja abierta.
+7. Revise Fidelización; cree y complete un recordatorio recurrente. Consulte auditoría como administrador.
+8. Genere reportes de citas, ventas, inventario, caja y clientes; vista previa, impresión o PDF. El Excel de citas se conserva.
+9. Cuente el efectivo, cierre su caja y revise la diferencia. Los pagos de tarjeta/transferencia no se suman al efectivo esperado.
 
-JDK 21 o superior, Maven y servidor MariaDB 10.6+ o MySQL 8.0.16+. JavaFX 21 y sus dependencias se resuelven con Maven. Esta distribución se verificó en Linux x86_64 con JDK 25; para Windows/macOS hay que reconstruir con sus bibliotecas nativas.
+Los reportes de ventas/caja/citas usan el período seleccionado. Inventario muestra las existencias actuales y Clientes el saldo acumulado. La impresión requiere una impresora disponible; el PDF no depende de ella. Las facturas son comprobantes académicos, sin integración fiscal ni numeración NCF certificada. El impuesto debe configurarlo el operador conforme al contexto; el sistema no decide obligaciones tributarias.
 
-1. Importar `database/01_schema.sql` en la base seleccionada. No requiere CREATE DATABASE ni privilegios de triggers en hosting compartido.
-2. Importar `database/02_demo.sql` una sola vez en una base vacía para crear las cuentas y datos académicos. Las claves académicas de demostración están en LEEME_DEMO.txt y en el PDF; no son claves del servidor.
-3. Copiar `config.example.properties` a `config.properties`, completar servidor y credenciales propias y generar una clave de cifrado privada de 32 bytes en Base64. No publicar este archivo. Todas las instalaciones que compartan secretos 2FA deben usar la misma clave de cifrado, distribuida por un canal privado.
-4. Ejecutar `mvn javafx:run`, o construir `mvn package` y usar `./scripts/ejecutar.sh`. La aplicación crea `logs/` localmente.
+## Arquitectura y datos
 
-Para preparar automáticamente una instalación local nueva en Linux con MariaDB instalado, ejecute `python3 scripts/preparar-local.py` antes de crear manualmente config.properties. Crea una base aislada, un usuario propio y los datos de demostración sin tocar el servidor del sistema.
+- `controlador`: vistas JavaFX/FXML, formularios, navegación y presentación.
+- `model`: clases de dominio heredadas del UML de la etapa inicial.
+- `service`: reglas, permisos, cálculos, coordinación de transacciones y reportes.
+- `dao/Store`: ejecución parametrizada, mapeo JDBC y commit/rollback; los servicios suministran las consultas.
+- `db/Database`: pool, configuración externa y validación TLS para conexiones remotas.
+- `security`: BCrypt, TOTP y cifrado de secretos; no se almacena la contraseña en texto plano.
 
-En la copia del equipo actual ya existe una configuración local privada y una base de desarrollo aislada. Para iniciarla tras reiniciar, ejecutar `./scripts/iniciar-db-local.sh` y después `./scripts/ejecutar.sh`. Usa el puerto 3308 y una carpeta ignorada `.local-db/`. No cambia el MariaDB del sistema.
+SQL: `01_schema.sql` (estructura anterior), `02_demo.sql` (datos ficticios anteriores), `03_v3.sql` (migración aditiva) y `04_demo_v3.sql` (productos/lotes ficticios nuevos). La inicialización automática ejecuta los cuatro en orden. Para una base 2.0 existente: primero respaldo y prueba en copia; después `03_v3.sql` una sola vez, con permisos DDL y para crear/eliminar la rutina temporal. El script comprueba las columnas existentes. No importe datos de demostración sobre una base de producción. Un contenedor ya creado no vuelve a ejecutar los scripts de inicialización.
 
-## Inicio de sesión
+La conexión de MyASP.NET de la etapa anterior continúa pendiente de su certificado TLS. La versión 3.0 se verifica con MariaDB local aislada y MySQL de CI; no se desactiva la verificación TLS remota. No se afirma que la nube esté resuelta.
 
-El primer factor se verifica contra BCrypt en la BD. Cada cuenta configura su propio Authenticator en el primer ingreso: escanear el QR (o introducir la clave manualmente), escribir el código actual y confirmar. Los siguientes ingresos piden un código sin volver a mostrar el secreto. Tras tres fallos de 2FA la cuenta se bloquea cinco minutos. Los códigos tienen pasos de 30 segundos y no se pueden reutilizar; hay bitácora de accesos. El administrador puede restablecer el 2FA de una cuenta.
+## Respaldo y restauración
 
-Los secretos TOTP se almacenan cifrados con AES-GCM y la clave externa; no hay códigos ni secretos fijos de autenticación en el programa. Si se pierde la clave de instalación no se pueden descifrar los secretos existentes. No sustituirla sin planificar el restablecimiento de 2FA.
+Solo para la demo local que administra el propietario del equipo:
 
-## Funciones
-
-- Administrador: clientes, servicios, citas, cobros, usuarios, roles, activación de cuentas, restablecimiento 2FA y bitácora.
-- Recepcionista: clientes, consulta de servicios, gestión de citas y cobros. No administra usuarios ni cambia el catálogo.
-- Barbero: consulta sus citas, completa sus servicios y ve sus indicadores/reportes; no accede al directorio de clientes ni a importes financieros.
-- Crear/editar clientes, servicios, citas y usuarios mediante modal FXML, con validación y refresco de tablas.
-- Confirmación de eliminación; la BD impide borrar clientes o servicios con registros relacionados.
-- Agenda valida jornada, fechas futuras y cruces; cobro y comprobante se guardan en una transacción.
-- Dashboard: cuatro KPI, gráfico de barras, gráfico de líneas y actividad reciente, calculados con SQL en segundo plano.
-- Reportes Excel con usuario, fecha, rango y columnas/filas según el rol. Se usa Apache POI.
-- Interfaz adaptable, menú desplegable al reducir a teléfono, tarjetas en 4/2/1 columnas y tablas simplificadas.
-
-Las cifras iniciales son datos de práctica almacenados en la base. No son constantes de los gráficos. Los cambios persistidos se conservan al reiniciar.
-
-## Arquitectura
-
-`db/Database` → `dao/Store` → `service/*` → `controlador/*` → FXML. Las consultas usan PreparedStatement y try-with-resources. `Store.tx` agrupa operaciones atómicas. Los controladores no contienen SQL; las comprobaciones de permisos están también en la capa de servicios. HikariCP mantiene un pool pequeño para no agotar el alojamiento remoto. La sesión expira a los 30 minutos.
-
-`model/` conserva las once entidades del diseño anterior. La persistencia de esta versión utiliza proyecciones JDBC para las tablas y estadísticas; no se presenta como un ORM. El esquema incorpora roles, segundo factor y bitácora.
-
-## Nube
-
-MariaDB puede ser remoto si el proveedor permite conexiones TCP/TLS. MyASP.NET anuncia MySQL: para ese servicio usar `jdbc:mysql:` y Connector/J, incluido en Maven. Para MariaDB se usa su propio conector. Configurar `sslMode=VERIFY_IDENTITY` en MySQL o `sslMode=verify-full` en MariaDB y el nombre de host que corresponda al certificado. La aplicación rechaza conexiones remotas sin verificación TLS. No desactivar la verificación del certificado como solución a un error.
-
-Estado verificado el 24 de noviembre de 2026: alojamiento MyASP.NET activo y base MySQL 8.0.46 creada. Se importaron las 14 tablas y los datos de demostración mediante phpMyAdmin; se comprobaron 15 claves foráneas, 3 usuarios, 8 clientes, 24 citas y 18 pagos (8100.00). Las cuentas todavía no tienen Authenticator vinculado. La conexión JDBC remota sigue pendiente: el servidor presenta un certificado autofirmado automático sin identidad del nombre del servidor, incompatible con VERIFY_IDENTITY. Solicitar al proveedor un endpoint con certificado válido y su cadena de confianza. No desactivar la verificación TLS. La configuración privada de nube está separada de la configuración local y requiere completar la contraseña localmente. No es una aplicación web y no debe subirse el JAR al hosting.
-
-## Pruebas y distribución
-
-```
-mvn test
-env BARBERIA_DB_TEST=true mvn test
-env BARBERIA_DB_TEST=true BARBERIA_UI=true mvn package
-java -cp target/barberia-v2-2.0.0.jar edu.unev.barberia.tools.CheckConnection
+```bash
+python scripts/respaldo.py crear backups/barberia.sql
 ```
 
-Las pruebas de BD necesitan las cuentas de práctica. Las pruebas gráficas necesitan sesión de escritorio y las claves de las cuentas de prueba en el archivo privado (`demo.admin.password`, `demo.recepcion.password`, `demo.barbero.password`). Restablecen 2FA de esas tres cuentas DEMO para permitir que el propietario las vincule después; no ejecutarlas sobre cuentas personales. Las pruebas funcionales crean registros temporales y los eliminan, sin modificar el proyecto original.
+El respaldo es privado y se crea sin sobrescribir otro archivo. Para comprobar una restauración, cree una instancia de ensayo separada y restaure allí:
 
-El JAR de Maven incluye dependencias y punto de entrada `Launcher`; `jpackage` genera una app-image Linux con runtime. Para usarla desde este equipo, iniciar la base de desarrollo y ejecutarla desde la carpeta del proyecto para que encuentre config.properties. La distribución no incluye credenciales, claves privadas ni secretos TOTP. Código publicado en https://github.com/Jeremoide/barberia-unev-tarea4. La versión original está separada en https://github.com/Jeremoide/barberia-unev. La distribución DevOps con base de práctica aislada está publicada en https://github.com/Jeremoide/barberia-unev-tarea4/releases/tag/devops-v1.0.0. Los paquetes anteriores de Tarea cuatro permanecen disponibles localmente.
+```bash
+python scripts/preparar-demo.py --profile restore --port 3317 --name barberia-v3-restore
+python scripts/respaldo.py restaurar backups/barberia.sql --name barberia-v3-restore --confirmar-restauracion
+```
 
-## Uso de IA
+La restauración puede reemplazar datos del destino: use una base vacía o su copia de ensayo, conserve antes un respaldo y compruebe tablas, conteos y acceso. Nunca restaure sobre una cuenta ajena o la base en uso. El script verifica la etiqueta del contenedor y no expone contraseñas en los argumentos. No suba respaldos a GitHub.
 
-Codex asistió en diagnóstico, diseño del esquema y de permisos, implementación Java/FXML/CSS, seguridad, pruebas y documentación. Se revisaron y corrigieron el diseño móvil, el flujo de verificación, la carga de datos y el empaquetado a partir de compilación, pruebas y capturas. El estudiante debe revisar las modificaciones y comprender las reglas antes de presentar. No se atribuyen modificaciones manuales del código al estudiante sin su confirmación.
+Para detener sin borrar datos: `podman stop barberia-3-demo` (o `docker stop`). Vuelva a ejecutar el preparador para iniciar. No elimine el volumen si quiere conservar sus registros y el vínculo de Authenticator; el cifrado requiere conservar también la clave de configuración.
 
-Para esta entrega, Codex también asistió en la investigación DevOps, los casos JUnit, el empaquetado reproducible, el workflow y la documentación. Se adaptaron las pruebas para usar salidas en target/ y fechas de datos de práctica independientes del día de ejecución.
+## Pruebas y CI
 
-La validación en MySQL de CI detectó y corrigió una conversión de DATETIME en el bloqueo de cuentas (Connector/J devuelve LocalDateTime y MariaDB puede devolver Timestamp). La prueba gráfica espera ahora a que la vista de login esté disponible tras cerrar sesión. Se fijaron versiones de plugins de recursos y JAR para evitar depender de valores implícitos del entorno.
+Unitarias sin base:
+
+```bash
+mvn -B test "-Dtest=BusinessRulesTest,SecurityTest,EnterpriseRulesTest"
+```
+
+Integración y JavaFX: exclusivamente con base ficticia separada. No active estos indicadores contra producción; la GUI reinicia el 2FA de las tres cuentas demo.
+
+```bash
+python scripts/preparar-demo.py --profile test --port 3315 --name barberia-v3-test
+```
+
+En la configuración privada de ensayo añada las propiedades de claves demo indicadas en la plantilla. Ejemplo Linux:
+
+```bash
+BARBERIA_DB_TEST=true BARBERIA_UI=true mvn -B verify -Dbarberia.config=config.test.properties
+```
+
+En CI se utiliza Xvfb; localmente necesita una sesión gráfica. En Windows defina los dos indicadores como variables de entorno desde PowerShell. Resultados: `target/surefire-reports/`; capturas: `target/evidencias/`.
+
+El workflow compila con Java21 en Linux y Windows, ejecuta las 20 pruebas unitarias, verifica integración MySQL y JavaFX y solo publica si los trabajos pasan. Publica la Release `v3.0.0` una sola vez sin reemplazar archivos de una versión publicada. Los ZIP incluyen ejecutable, SQL, preparación y manual; excluyen configuración privada, usuarios reales, logs y respaldos. Una instalación gráfica en otro equipo sigue siendo una validación distinta de compilar en CI.
+
+## Revisión del plan del profesor
+
+Consulte `docs/MATRIZ_REQUISITOS.md` para la adaptación por estudiante y sus límites. No se incorporan módulos escolares, medicamentos regulados ni una mascota virtual que no corresponde al negocio. Sus conceptos útiles se aplican a permisos, horarios, FEFO, trazabilidad, cierres, recordatorios y niveles de fidelidad.
+
+Se utilizó Codex como apoyo en implementación, pruebas y documentación. Los resultados se verifican con ejecuciones reales; el estudiante debe revisar el código y explicar sus decisiones con su propia voz.
