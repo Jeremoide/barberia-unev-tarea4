@@ -8,3 +8,10 @@ reportes/
 .idea/
 config/*.properties
 .secrets/
+
+# Distribución DevOps y configuración privada de la demostración
+.demo/
+.env
+.env.*
+config.demo.properties
+dist/

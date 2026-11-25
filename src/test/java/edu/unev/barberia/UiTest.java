@@ -20,7 +20,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 @EnabledIfEnvironmentVariable(named = "BARBERIA_UI", matches = "true")
 class UiTest {
-  static Path images = Path.of("..", "documentacion", "evidencias", "despues");
+  static Path images = Path.of(System.getProperty("barberia.evidenceDir", "target/evidencias"));
 
   static <T> T fx(Callable<T> c) throws Exception {
     FutureTask<T> task = new FutureTask<>(c);
@@ -153,7 +153,7 @@ class UiTest {
               App.session,
               java.time.LocalDate.now().minusDays(20),
               java.time.LocalDate.now().plusDays(7),
-              Path.of("..", "entregables", "Reporte_Demo_Administrador.xlsx"));
+              images.resolve("Reporte_Demo_Administrador.xlsx"));
       size(1366, 768);
       click("Clientes");
       waitFor(() ->

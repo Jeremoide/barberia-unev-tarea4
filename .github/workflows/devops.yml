@@ -1,0 +1,121 @@
+name: Compilar probar y publicar JavaFX
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: devops-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    name: JUnit y paquete ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compilar
+        run: mvn -B -ntp compile
+      - name: Ejecutar pruebas unitarias
+        run: mvn -B -ntp test "-Dtest=BusinessRulesTest,SecurityTest"
+      - name: Generar JAR y distribución
+        run: |
+          mvn -B -ntp package -DskipTests
+          python scripts/empaquetar-devops.py --platform ${{ matrix.platform }}
+      - name: Conservar resultados JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.platform }}
+          path: target/surefire-reports/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribucion-${{ matrix.platform }}
+          path: dist/*
+          if-no-files-found: error
+  integration:
+    name: Integración MySQL e interfaz JavaFX
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-ephemeral-only
+          MYSQL_DATABASE: barberia_ci
+        ports: ['33306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-ephemeral-only"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Preparar dependencias gráficas
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgtk-3-0
+      - name: Preparar base y configuración efímera
+        env:
+          MYSQL_PWD: ci-ephemeral-only
+        run: |
+          mysql --protocol=TCP -h 127.0.0.1 -P 33306 -u root barberia_ci < database/01_schema.sql
+          mysql --protocol=TCP -h 127.0.0.1 -P 33306 -u root barberia_ci < database/02_demo.sql
+          python3 - <<'PYCODE'
+          import base64,secrets
+          from pathlib import Path
+          Path('config.properties').write_text('db.url=jdbc:mysql://127.0.0.1:33306/barberia_ci?sslMode=DISABLED&connectionTimeZone=America/Santo_Domingo\ndb.user=root\ndb.password=ci-ephemeral-only\nsecurity.key='+base64.b64encode(secrets.token_bytes(32)).decode()+'\ndemo.admin.password=AdminDemo2026!\ndemo.recepcion.password=RecepDemo2026!\ndemo.barbero.password=BarberoDemo2026!\n')
+          PYCODE
+      - name: Verificar integración y GUI en base aislada
+        env:
+          BARBERIA_DB_TEST: 'true'
+          BARBERIA_UI: 'true'
+        run: xvfb-run -a mvn -B -ntp verify
+      - name: Conservar resultados y capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integracion-y-gui
+          path: |
+            target/surefire-reports/
+            target/evidencias/
+  publish:
+    name: Publicar versión DevOps 1.0
+    needs: [build, integration]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: distribucion-*
+          path: release-assets
+          merge-multiple: true
+      - name: Crear Release si todavía no existe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view devops-v1.0.0 >/dev/null 2>&1; then
+            echo 'La versión 1.0 ya existe y conserva sus archivos originales.'
+          else
+            gh release create devops-v1.0.0 release-assets/* --target "$GITHUB_SHA" --title 'Barbería UNEV — Entrega DevOps 1.0' --notes-file LEEME_DEMO.txt
+          fi

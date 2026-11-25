@@ -112,13 +112,14 @@ class IntegrationTest {
     assertThrows(
         SecurityException.class,
         () -> service.list(barber, "Usuarios", LocalDate.now().minusDays(2), LocalDate.now()));
-    var report = service.report(barber, LocalDate.now().minusDays(20), LocalDate.now().plusDays(7));
+    LocalDate from = LocalDate.of(2026, 11, 1), to = LocalDate.of(2026, 11, 30);
+    var report = service.report(barber, from, to);
     assertFalse(report.isEmpty());
     assertFalse(report.getFirst().containsKey("cobrado"));
     Path path = Files.createTempFile("barberia-report-", ".xlsx");
     try {
       new ReportService()
-          .export(barber, LocalDate.now().minusDays(20), LocalDate.now().plusDays(7), path);
+          .export(barber, from, to, path);
       try (var book = new org.apache.poi.xssf.usermodel.XSSFWorkbook(path.toFile())) {
         assertTrue(
             book.getSheetAt(0)

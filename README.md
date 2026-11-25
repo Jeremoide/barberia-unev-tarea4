@@ -2,12 +2,44 @@
 
 Aplicación JavaFX de escritorio con persistencia JDBC, perfiles de acceso, autenticación TOTP y panel de indicadores. Copia independiente del proyecto académico anterior; no sustituye sus archivos ni su base de datos.
 
+## Entrega DevOps y descarga para compañeros
+
+La aplicación conserva su versión 2.0.0. La publicación académica de distribución y pruebas se identifica como **devops-v1.0.0**.
+
+- [Descargar distribución Windows o Linux x86_64](https://github.com/Jeremoide/barberia-unev-tarea4/releases/tag/devops-v1.0.0)
+- [Ver compilaciones y pruebas automáticas](https://github.com/Jeremoide/barberia-unev-tarea4/actions/workflows/devops.yml)
+
+Elija el ZIP de su sistema. JavaFX es una aplicación de escritorio; no se ejecuta dentro del navegador. No existe una API o backend web en este proyecto, así que no corresponde una URL de backend. El servicio de publicación es GitHub Releases.
+
+### Ejecutar sin rutas de la computadora del autor
+
+Requisitos: Java 21+, Python 3.10+, Docker Desktop/Engine o Podman iniciado, sesión gráfica; Linux necesita GTK 3. El ZIP contiene su JAR con dependencias nativas para el sistema elegido. No necesita Maven para ejecutar el ZIP.
+
+1. Extraer **todo** el ZIP y abrir una terminal en la carpeta `Barberia-DevOps`.
+2. Ejecutar `python scripts/preparar-demo.py` (en Linux puede ser `python3`; para Podman añadir `--engine podman`). La primera descarga requiere Internet.
+3. Comprobar JDBC con `python scripts/abrir-demo.py --check`.
+4. Abrir con `python scripts/abrir-demo.py`.
+
+El preparador crea una base aislada en 127.0.0.1:3310, credenciales aleatorias privadas y un volumen persistente. No usa el servidor ni los datos de MyASP.NET del autor. Para detener sin borrar datos: `docker stop barberia-devops-demo` o `podman stop barberia-devops-demo`. No ejecutar `volume rm` ni borrar datos de un compañero.
+
+Las cuentas y claves de **práctica** están en `LEEME_DEMO.txt`. Cada instalación utiliza su propia base y su clave de cifrado. No subir `.demo/`, `config.demo.properties` ni la configuración de nube al repositorio. Si el puerto está ocupado, preparar una carpeta nueva usando `--port 3311 --name barberia-devops-otra`.
+
+### JUnit y automatización
+
+Con el código fuente y Maven: `mvn -B test "-Dtest=BusinessRulesTest,SecurityTest"`. Ejecuta siete casos de reglas del negocio y tres de seguridad sin base de datos. `BusinessRulesTest` incluye dos nombres válidos, un nombre en blanco inválido, límites de 150/151 caracteres y rangos de fechas válido/inválido.
+
+El workflow `.github/workflows/devops.yml` se activa con push a main, pull request o ejecución manual. Compila y ejecuta JUnit en Linux y Windows, genera los ZIP, verifica integración y GUI en una base MySQL efímera con Xvfb y publica la versión únicamente si todos los jobs requeridos pasan. Si falla una prueba, se conservan los reportes JUnit, fallan sus dependencias y no se crea una nueva publicación. El caché de Maven acelera dependencias; los artefactos contienen resultados y paquetes. El token de publicación es el GITHUB_TOKEN efímero del job, no un token personal guardado en código. La Release 1.0 es inmutable: ejecuciones posteriores no sustituyen sus archivos.
+
+Para integración local, use únicamente una base de práctica aislada: `BARBERIA_DB_TEST=true mvn test -Dbarberia.config=config.demo.properties -Dtest=IntegrationTest` en Bash. En PowerShell: `$env:BARBERIA_DB_TEST='true'` y después el comando Maven. Las cuatro pruebas verifican CRUD, permisos y Excel, citas y cobros, y login/2FA. La prueba GUI es opcional localmente, necesita las contraseñas de las tres cuentas demo en configuración privada y restablece sus vinculaciones 2FA; CI la ejecuta solo sobre su base desechable.
+
+Los reportes automáticos están en `target/surefire-reports/` y las capturas GUI en `target/evidencias/`. Las pruebas locales/CI no sustituyen el acta del compañero ni prueban por sí solas un segundo equipo físico.
+
 ## Requisitos y ejecución
 
 JDK 21 o superior, Maven y servidor MariaDB 10.6+ o MySQL 8.0.16+. JavaFX 21 y sus dependencias se resuelven con Maven. Esta distribución se verificó en Linux x86_64 con JDK 25; para Windows/macOS hay que reconstruir con sus bibliotecas nativas.
 
 1. Importar `database/01_schema.sql` en la base seleccionada. No requiere CREATE DATABASE ni privilegios de triggers en hosting compartido.
-2. Importar `database/02_demo.sql` una sola vez en una base vacía para crear las cuentas y datos académicos. Las claves de demostración están en el PDF de entrega, fuera del repositorio; no son claves del servidor.
+2. Importar `database/02_demo.sql` una sola vez en una base vacía para crear las cuentas y datos académicos. Las claves académicas de demostración están en LEEME_DEMO.txt y en el PDF; no son claves del servidor.
 3. Copiar `config.example.properties` a `config.properties`, completar servidor y credenciales propias y generar una clave de cifrado privada de 32 bytes en Base64. No publicar este archivo. Todas las instalaciones que compartan secretos 2FA deben usar la misma clave de cifrado, distribuida por un canal privado.
 4. Ejecutar `mvn javafx:run`, o construir `mvn package` y usar `./scripts/ejecutar.sh`. La aplicación crea `logs/` localmente.
 
@@ -63,3 +95,5 @@ El JAR de Maven incluye dependencias y punto de entrada `Launcher`; `jpackage` g
 ## Uso de IA
 
 Codex asistió en diagnóstico, diseño del esquema y de permisos, implementación Java/FXML/CSS, seguridad, pruebas y documentación. Se revisaron y corrigieron el diseño móvil, el flujo de verificación, la carga de datos y el empaquetado a partir de compilación, pruebas y capturas. El estudiante debe revisar las modificaciones y comprender las reglas antes de presentar. No se atribuyen modificaciones manuales del código al estudiante sin su confirmación.
+
+Para esta entrega, Codex también asistió en la investigación DevOps, los casos JUnit, el empaquetado reproducible, el workflow y la documentación. Se adaptaron las pruebas para usar salidas en target/ y fechas de datos de práctica independientes del día de ejecución.

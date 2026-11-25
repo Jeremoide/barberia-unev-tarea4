@@ -1,0 +1,31 @@
+BARBERÍA UNEV — DISTRIBUCIÓN DEVOPS 1.0
+Aplicación existente versión 2.0.0; publicación académica devops-v1.0.0.
+
+REQUISITOS
+Java 21 o superior, Python 3.10+ y Docker Desktop/Engine o Podman en funcionamiento. Use el ZIP de su sistema (Windows o Linux x86_64). Linux necesita una sesión gráfica y GTK 3. Internet se requiere para la primera descarga de la imagen oficial de MariaDB.
+
+INICIO DESDE CUALQUIER CARPETA
+1. Extraiga todo el ZIP, sin separar el JAR de scripts/ y database/.
+2. Abra una terminal dentro de la carpeta extraída.
+3. Ejecute: python scripts/preparar-demo.py
+   En Linux puede usar python3. Si utiliza Podman: añada --engine podman.
+4. Compruebe JDBC: python scripts/abrir-demo.py --check
+5. Abra la aplicación: python scripts/abrir-demo.py
+
+CUENTAS ACADÉMICAS DEL ENTORNO AISLADO
+Administrador: admin.demo / AdminDemo2026!
+Recepcionista: recepcion.demo / RecepDemo2026!
+Barbero: barbero.demo / BarberoDemo2026!
+En el primer acceso vincule Authenticator y confirme el código de seis dígitos. Estas claves de práctica no son credenciales del servidor.
+
+DATOS Y SEGURIDAD
+El preparador genera claves aleatorias locales y una base independiente, escucha solamente en 127.0.0.1:3310 y conserva los datos en un volumen. No usa la cuenta MyASP.NET del autor. No elimina registros ni reinstala una base existente. No comparta config.demo.properties ni .demo/. Para detener sin borrar datos: docker stop barberia-devops-demo (o podman stop). Para volver a iniciar, repita el preparador.
+
+Si el puerto 3310 está ocupado, en una carpeta nueva use --port 3311 --name barberia-devops-otra. La configuración guardada conserva el puerto elegido.
+
+NUBE
+La base de MyASP.NET está importada, pero la conexión remota del autor sigue pendiente por la validación TLS del proveedor. Esta distribución se ofrece con una base de prueba local aislada para que la evaluación de DevOps no dependa de esa incidencia. No se afirma que esté conectada a la nube.
+
+CÓDIGO Y PRUEBAS
+https://github.com/Jeremoide/barberia-unev-tarea4
+El ZIP de distribución contiene el ejecutable. Para revisar JUnit descargue el código fuente: mvn test -Dtest=BusinessRulesTest,SecurityTest. Las pruebas de integración requieren una base de demostración y la configuración indicada en el README.
