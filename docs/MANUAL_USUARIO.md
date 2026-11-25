@@ -24,7 +24,7 @@ Para cobrar una cita completada también debe tener caja abierta; el pago queda 
 
 Fidelización muestra puntos y nivel acumulados: Bronce, Plata desde 30 puntos y Oro desde 100. Cada RD$100 cobrados genera un punto entero. En la venta puede canjear 100 puntos por RD$100 de descuento si el saldo y el total lo permiten. Las devoluciones revierten los puntos de esa operación.
 
-En Recordatorios registre cliente, actividad, categoría, prioridad, fecha/hora y repetición en días. Cero significa sin repetición. Completar cierra la actividad y crea la siguiente si corresponde; posponer conserva el historial y crea una nueva para el día siguiente. La aplicación muestra alertas locales en el dashboard y la lista. No envía mensajes fuera del programa.
+En Recordatorios registre cliente, actividad, categoría, prioridad, fecha/hora y repetición en días. Cero significa sin repetición. Editar permite cambiar una actividad pendiente. Completar cierra la actividad y crea la siguiente si corresponde; posponer conserva el historial y crea una nueva para el día siguiente. La aplicación muestra alertas locales en el dashboard y la lista. No envía mensajes fuera del programa.
 
 ## Reportes y administración
 

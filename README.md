@@ -8,7 +8,7 @@ Esta versión amplía la 2.0 sin modificar su carpeta ni la Release DevOps anter
 
 Requisitos: Java 21 o superior, Python 3.10 o superior, Docker o Podman iniciado y acceso a Internet la primera vez para descargar MariaDB. En Linux se requiere GTK 3. Los paquetes son para equipos x64. Windows usa `python` y Linux puede usar `python3`.
 
-1. Descargue el ZIP correspondiente a su sistema desde la Release `v3.0.0` y extráigalo.
+1. Descargue el ZIP correspondiente a su sistema desde la Release `v3.0.1` y extráigalo.
 2. Abra una terminal dentro de la carpeta extraída.
 3. Prepare la base: `python scripts/preparar-demo.py`.
 4. Compruebe JDBC: `python scripts/abrir-demo.py --check`.
@@ -110,10 +110,12 @@ BARBERIA_DB_TEST=true BARBERIA_UI=true mvn -B verify -Dbarberia.config=config.te
 
 En CI se utiliza Xvfb; localmente necesita una sesión gráfica. En Windows defina los dos indicadores como variables de entorno desde PowerShell. Resultados: `target/surefire-reports/`; capturas: `target/evidencias/`.
 
-El workflow compila con Java21 en Linux y Windows, ejecuta las 20 pruebas unitarias, verifica integración MySQL y JavaFX y solo publica si los trabajos pasan. Publica la Release `v3.0.0` una sola vez sin reemplazar archivos de una versión publicada. Los ZIP incluyen ejecutable, SQL, preparación y manual; excluyen configuración privada, usuarios reales, logs y respaldos. Una instalación gráfica en otro equipo sigue siendo una validación distinta de compilar en CI.
+El workflow compila con Java21 en Linux y Windows, ejecuta las 20 pruebas unitarias, verifica integración MySQL y JavaFX y solo publica si los trabajos pasan. Publica la Release `v3.0.1` una sola vez sin reemplazar archivos de una versión publicada. Los ZIP incluyen ejecutable, SQL, preparación y manual; excluyen configuración privada, usuarios reales, logs y respaldos. Una instalación gráfica en otro equipo sigue siendo una validación distinta de compilar en CI.
 
 ## Revisión del plan del profesor
 
 Consulte `docs/MATRIZ_REQUISITOS.md` para la adaptación por estudiante y sus límites. No se incorporan módulos escolares, medicamentos regulados ni una mascota virtual que no corresponde al negocio. Sus conceptos útiles se aplican a permisos, horarios, FEFO, trazabilidad, cierres, recordatorios y niveles de fidelidad.
 
 Se utilizó Codex como apoyo en implementación, pruebas y documentación. Los resultados se verifican con ejecuciones reales; el estudiante debe revisar el código y explicar sus decisiones con su propia voz.
+
+La entrega final de la serie 3.0 es 3.0.1: ajusta el tamaño del carrito y de los modales y permite editar seguimientos pendientes. La publicación 3.0.0 se conserva en el historial.

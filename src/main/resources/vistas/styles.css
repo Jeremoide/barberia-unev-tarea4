@@ -67,3 +67,6 @@
 .auth { -fx-background-color: #142944; -fx-background-radius: 14; -fx-border-color: #304f73; -fx-border-radius: 14; -fx-effect: dropshadow(gaussian,#00000033,24,0,0,8); }
 
 .nav-icon { -fx-fill: transparent; -fx-stroke: #91b4e5; -fx-stroke-width: 1.4; }
+
+.checkout-total { -fx-text-fill: #79dcc6; -fx-font-size: 13px; -fx-font-weight: bold; }
+.button.secondary { -fx-background-color: #253d5b; -fx-text-fill: #cfdeef; }

@@ -418,6 +418,33 @@ public final class EnterpriseService {
     });
   }
 
+  public void editReminder(
+      Session s, long id, String title, LocalDateTime due, String priority, int days)
+      throws Exception {
+    access(s, false);
+    String text = BarberiaService.required(title, "Actividad");
+    if (due == null
+        || days < 0
+        || days > 365
+        || !List.of("ALTA", "MEDIA", "BAJA").contains(priority))
+      throw new IllegalArgumentException("Fecha, prioridad o recurrencia inválida.");
+    Store.tx(c -> {
+      var row = Store.one(c, "SELECT estado FROM recordatorios WHERE id=? FOR UPDATE", id);
+      if (row == null || !Store.text(row, "estado").equals("PENDIENTE"))
+        throw new IllegalArgumentException("Solo se editan recordatorios pendientes.");
+      Store.update(
+          c,
+          "UPDATE recordatorios SET titulo=?,fecha=?,prioridad=?,repetir_dias=? WHERE id=?",
+          text,
+          due,
+          priority,
+          days,
+          id);
+      audit(c, s, "RECORDATORIO_EDITADO", id);
+      return null;
+    });
+  }
+
   public void resolveReminder(Session s, long id, boolean postpone) throws Exception {
     access(s, false);
     Store.tx(c -> {

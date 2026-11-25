@@ -50,7 +50,7 @@ La tabla ordena la página cargada; no se afirma ordenamiento global por cualqui
 | Vladimir farmacia | Inventario por lotes, FEFO, bloqueo de vencidos, facturación independiente, caja, arqueo, filtros y trazabilidad | Medicamentos y controles sanitarios/regulados no corresponden; no se afirma cumplimiento farmacéutico |
 | Eliam colegio | Acceso por perfil, relación usuario-barbero, horarios propios, bloqueo por permisos, historial y procesos cerrados | Padres, estudiantes, aula virtual, promoción y notas no corresponden |
 | Duarte David POS | Rediseño con menú/iconos, dashboard, módulos, carrito, cantidades, descuento/impuesto, pago/cambio, comprobante, caja, historial y ejecutable | Comprobante académico; sin NCF fiscal certificado ni devoluciones parciales. Instalación en otro equipo requiere ensayo presencial |
-| Wildania recordatorios/avatar | Seguimientos por cliente, fecha, categoría, prioridad, recurrencia, completar/posponer, alertas, puntos, canje, niveles y persistencia sin recompensas duplicadas | No se agrega una mascota que se alimente ni la web de otro proyecto; los niveles representan fidelidad comercial. Alertas dentro de la app, sin mensajería externa |
+| Wildania recordatorios/avatar | Seguimientos por cliente, fecha, categoría, prioridad, recurrencia, editar/completar/posponer, alertas, puntos, canje, niveles y persistencia sin recompensas duplicadas | No se agrega una mascota que se alimente ni la web de otro proyecto; los niveles representan fidelidad comercial. Alertas dentro de la app, sin mensajería externa |
 
 ## Tres ampliaciones destacadas
 

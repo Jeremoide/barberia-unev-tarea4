@@ -217,6 +217,37 @@ public final class EnterprisePane extends VBox {
     if (module.equals("Recordatorios"))
       actions
           .getChildren()
+          .add(
+              action(
+                  "Editar recordatorio",
+                  () -> {
+                    long id = selected();
+                    var row = table.getSelectionModel().getSelectedItem();
+                    LocalDateTime due = date(row.get("fecha"));
+                    form(
+                        "Editar seguimiento pendiente",
+                        List.of(
+                            field("Actividad", new TextField(Store.text(row, "titulo"))),
+                            field("Fecha", new DatePicker(due.toLocalDate())),
+                            field("Hora HH:mm", new TextField(due.toLocalTime().toString())),
+                            field(
+                                "Prioridad",
+                                choices(Store.text(row, "prioridad"), "ALTA", "MEDIA", "BAJA")),
+                            field("Repetir días", new TextField(Store.text(row, "repetir_dias")))),
+                        v -> {
+                          service.editReminder(
+                              App.session,
+                              id,
+                              v.text(0),
+                              v.day(1).atTime(LocalTime.parse(v.text(2))),
+                              v.text(3),
+                              v.number(4));
+                          return null;
+                        });
+                  }));
+    if (module.equals("Recordatorios"))
+      actions
+          .getChildren()
           .addAll(
               action("＋ Recordatorio", this::reminder),
               action("Completar", () -> resolve(false)),
@@ -248,7 +279,8 @@ public final class EnterprisePane extends VBox {
                   "Anular venta",
                   "Ver factura / PDF",
                   "Completar",
-                  "Posponer un día")
+                  "Posponer un día",
+                  "Editar recordatorio")
               .contains(b.getText()))
         b.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
     getChildren().addAll(intro, filters, actions, message, table, pages);
@@ -412,7 +444,10 @@ public final class EnterprisePane extends VBox {
             });
     }
     box.getChildren().add(error);
-    d.getDialogPane().setContent(new ScrollPane(box));
+    ScrollPane scroll = new ScrollPane(box);
+    scroll.setFitToWidth(true);
+    scroll.setPrefViewportHeight(Math.min(580, Math.max(340, App.window.getHeight() - 190)));
+    d.getDialogPane().setContent(scroll);
     d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
     Button ok = (Button) d.getDialogPane().lookupButton(ButtonType.OK);
     ok.setText("Guardar");
@@ -470,7 +505,7 @@ public final class EnterprisePane extends VBox {
 
   ComboBox<String> choices(String... values) {
     ComboBox<String> c = new ComboBox<>();
-    c.getItems().setAll(values);
+    c.getItems().setAll(new java.util.LinkedHashSet<>(java.util.Arrays.asList(values)));
     c.getSelectionModel().selectFirst();
     return c;
   }
@@ -616,8 +651,10 @@ public final class EnterprisePane extends VBox {
                   "Añadir al carrito",
                   () -> {
                     Option p = product.getValue();
-                    if (p == null || !prices.containsKey(p.id()))
-                      throw new IllegalArgumentException("Seleccione un producto disponible.");
+                    if (p == null || !prices.containsKey(p.id())) {
+                      error.setText("Seleccione un producto disponible.");
+                      return;
+                    }
                     lines.add(new EnterpriseService.Line(p.id(), qty.getValue()));
                     basket.getItems().add(p.nombre() + " × " + qty.getValue());
                     recalc.run();
@@ -659,16 +696,21 @@ public final class EnterprisePane extends VBox {
                   grid,
                   new HBox(10, add, remove),
                   basket,
-                  redeem,
-                  total,
-                  error);
+                  redeem);
           box.setPadding(new Insets(20));
           box.setPrefWidth(740);
           total.setWrapText(true);
-          d.getDialogPane().setContent(new ScrollPane(box));
+          ScrollPane scroll = new ScrollPane(box);
+          scroll.setFitToWidth(true);
+          scroll.setPrefViewportHeight(Math.min(520, Math.max(300, App.window.getHeight() - 260)));
+          total.getStyleClass().add("checkout-total");
+          VBox footer = new VBox(8, total, error);
+          footer.setPadding(new Insets(10, 16, 4, 16));
+          d.getDialogPane().setContent(new VBox(6, scroll, footer));
           d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
           Button ok = (Button) d.getDialogPane().lookupButton(ButtonType.OK);
-          ok.setText("Cobrar y emitir factura");
+          ok.setText("Cobrar");
+          d.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("secondary");
           ok.addEventFilter(
               javafx.event.ActionEvent.ACTION,
               e -> {

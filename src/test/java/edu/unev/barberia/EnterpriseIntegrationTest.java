@@ -227,6 +227,8 @@ class EnterpriseIntegrationTest {
     e.reminder(
         admin, client, "Seguimiento " + code, "Visita", "ALTA", LocalDateTime.now().plusDays(1), 7);
     long id = number("SELECT MAX(id) n FROM recordatorios WHERE cliente_id=?", client);
+    e.editReminder(
+        admin, id, "Seguimiento editado " + code, LocalDateTime.now().plusDays(2), "MEDIA", 7);
     e.resolveReminder(admin, id, false);
     assertEquals(2, number("SELECT COUNT(*) n FROM recordatorios WHERE cliente_id=?", client));
     assertThrows(IllegalArgumentException.class, () -> e.resolveReminder(admin, id, false));

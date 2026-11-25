@@ -116,8 +116,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view v3.0.0 >/dev/null 2>&1; then
+          if gh release view v3.0.1 >/dev/null 2>&1; then
             echo 'La versión 3.0 ya existe y conserva sus archivos originales.'
           else
-            gh release create v3.0.0 release-assets/* --target "$GITHUB_SHA" --title 'Barbería UNEV — Versión 3.0' --notes-file LEEME_DEMO.txt
+            gh release create v3.0.1 release-assets/* --target "$GITHUB_SHA" --title 'Barbería UNEV — Versión 3.0' --notes-file LEEME_DEMO.txt
           fi
