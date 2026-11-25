@@ -196,6 +196,7 @@ class UiTest {
       shot("clientes_final");
       for (String role : new String[] {"recepcion", "barbero"}) {
         click("Cerrar sesión");
+        waitFor(() -> root().lookup("#usuario") != null && root().lookup("#clave") != null);
         fx(() -> {
           ((TextField) root().lookup("#usuario")).setText(role + ".demo");
           ((PasswordField) root().lookup("#clave"))

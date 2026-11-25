@@ -127,7 +127,9 @@ public final class AuthService {
 
   private boolean locked(Map<String, Object> u) {
     Object v = u.get("bloqueado_hasta");
-    return v != null && ((Timestamp) v).toLocalDateTime().isAfter(LocalDateTime.now());
+    if (v == null) return false;
+    LocalDateTime until = v instanceof LocalDateTime time ? time : ((Timestamp) v).toLocalDateTime();
+    return until.isAfter(LocalDateTime.now());
   }
 
   private void audit(Connection c, Long id, String username, String result) throws SQLException {

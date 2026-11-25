@@ -97,3 +97,5 @@ El JAR de Maven incluye dependencias y punto de entrada `Launcher`; `jpackage` g
 Codex asistió en diagnóstico, diseño del esquema y de permisos, implementación Java/FXML/CSS, seguridad, pruebas y documentación. Se revisaron y corrigieron el diseño móvil, el flujo de verificación, la carga de datos y el empaquetado a partir de compilación, pruebas y capturas. El estudiante debe revisar las modificaciones y comprender las reglas antes de presentar. No se atribuyen modificaciones manuales del código al estudiante sin su confirmación.
 
 Para esta entrega, Codex también asistió en la investigación DevOps, los casos JUnit, el empaquetado reproducible, el workflow y la documentación. Se adaptaron las pruebas para usar salidas en target/ y fechas de datos de práctica independientes del día de ejecución.
+
+La validación en MySQL de CI detectó y corrigió una conversión de DATETIME en el bloqueo de cuentas (Connector/J devuelve LocalDateTime y MariaDB puede devolver Timestamp). La prueba gráfica espera ahora a que la vista de login esté disponible tras cerrar sesión. Se fijaron versiones de plugins de recursos y JAR para evitar depender de valores implícitos del entorno.
